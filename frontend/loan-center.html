@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lendmark - Loan Application</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+  <script src="js/theme-config.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-background text-foreground antialiased ">
+  <div class="app-layout">
+    <div id="sidebar-container" class="sidebar-wrapper"></div>
+    
+    <main class="main-content">
+      <div class="p-6 max-w-[1000px] mx-auto space-y-6 ">
+        
+        <div class="page-header"><div class="flex items-center justify-between gap-4">
+          <div>
+            <h1 class="font-semibold text-lg text-foreground">Loan Application</h1>
+            <p class="text-sm text-muted-foreground mt-1.5 font-medium">Institutional evaluation protocol utilizing advanced predictive analysis.</p>
+          </div>
+        </div></div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          <!-- Form Section -->
+          <div class="lg:col-span-7 space-y-8">
+            <!-- Institutional Progress Bar -->
+            <div class="flex items-center gap-2 p-1.5 rounded bg-muted/50 border shadow-inner">
+              <button id="step-1-btn" onclick="goToStep(1)" class="flex-1 flex items-center gap-3 px-6 py-3 rounded justify-center text-[10px] font-black uppercase tracking-[0.2em] transition-all bg-card text-foreground shadow-md ring-1 ring-primary/5">
+                <span class="w-6 h-6 rounded-lg flex items-center justify-center bg-primary text-primary-foreground shadow-lg">1</span>
+                <span>Profile</span>
+              </button>
+              <button id="step-2-btn" onclick="goToStep(2)" class="flex-1 flex items-center gap-3 px-6 py-3 rounded justify-center text-[10px] font-black uppercase tracking-[0.2em] transition-all text-muted-foreground hover:text-foreground">
+                <span class="w-6 h-6 rounded-lg flex items-center justify-center bg-muted-foreground/20">2</span>
+                <span>Requirements</span>
+              </button>
+              <button id="step-3-btn" onclick="goToStep(3)" class="flex-1 flex items-center gap-3 px-6 py-3 rounded justify-center text-[10px] font-black uppercase tracking-[0.2em] transition-all text-muted-foreground hover:text-foreground">
+                <span class="w-6 h-6 rounded-lg flex items-center justify-center bg-muted-foreground/20">3</span>
+                <span>Collateral</span>
+              </button>
+            </div>
+
+            <div class="bg-card p-6 sm:p-6 rounded border shadow-sm relative overflow-hidden">
+              <div class="absolute top-0 left-0 w-full h-1.5 bg-muted/30">
+                <div id="progress-bar" class="h-full bg-primary transition-all duration-700" style="width: 33.33%"></div>
+              </div>
+
+              <div id="step-1" class="step-content animate-in fade-in slide-in-from-bottom-6 duration-500">
+                <div class="mb-10">
+                  <h2 class="text-xl font-semibold text-foreground">Identification & Profile</h2>
+                  <p class="text-sm text-muted-foreground font-medium mt-1">Foundational data for eligibility assessment.</p>
+                </div>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
+                  <div class="space-y-3">
+                    <label class="text-[10px] font-black uppercase tracking-wide text-muted-foreground ml-1">Academic Attainment</label>
+                    <select id="education" class="w-full bg-background border-2 rounded px-6 py-4 text-sm font-bold focus:outline-none focus:border-primary transition-all cursor-pointer">
+                      <option value="Graduate">Post-Graduate / Doctorate</option>
+                      <option value="Not Graduate">Undergraduate / Vocational</option>
+                    </select>
+                  </div>
+                  <div class="space-y-3">
+                    <label class="text-[10px] font-black uppercase tracking-wide text-muted-foreground ml-1">Employment Structure</label>
+                    <select id="self_employed" class="w-full bg-background border-2 rounded px-6 py-4 text-sm font-bold focus:outline-none focus:border-primary transition-all cursor-pointer">
+                      <option value="No">Corporate / Salaried</option>
+                      <option value="Yes">Entrepreneurial / Independent</option>
+                    </select>
+                  </div>
+                </div>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-12">
+                  <div class="space-y-3">
+                    <label class="text-[10px] font-black uppercase tracking-wide text-muted-foreground ml-1">Dependent Population</label>
+                    <input type="number" id="no_of_dependents" class="w-full bg-background border-2 rounded px-6 py-4 text-sm font-bold focus:outline-none focus:border-primary transition-all" value="0" min="0" max="10">
+                  </div>
+                  <div class="space-y-3">
+                    <label class="text-[10px] font-black uppercase tracking-wide text-primary ml-1">Historical CIBIL Score</label>
+                    <input type="number" id="cibil_score" class="w-full bg-background border-2 border-primary/10 rounded px-6 py-4 text-lg font-black text-primary focus:outline-none focus:border-primary transition-all" value="700" min="300" max="900">
+                  </div>
+                </div>
+                
+                <div class="flex justify-end pt-8 border-t border-dashed">
+                  <button class="bg-primary text-primary-foreground px-10 py-4 rounded text-sm font-black shadow-sm shadow-primary/20 hover:translate-y-[-2px] transition-all flex items-center gap-3 uppercase tracking-wide" onclick="goToStep(2)">
+                    Proceed <i data-lucide="arrow-right" size="18"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div id="step-2" class="step-content hidden animate-in fade-in slide-in-from-bottom-6 duration-500">
+                <div class="mb-10">
+                  <h2 class="text-xl font-semibold text-foreground">Capital Requirements</h2>
+                  <p class="text-sm text-muted-foreground font-medium mt-1">Specify desired disbursement parameters.</p>
+                </div>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
+                  <div class="space-y-3">
+                    <label class="text-[10px] font-black uppercase tracking-wide text-muted-foreground ml-1">Annual Revenue (₹)</label>
+                    <input type="number" id="income_annum" class="w-full bg-background border-2 rounded px-6 py-4 text-sm font-bold focus:outline-none focus:border-primary transition-all" value="750000">
+                  </div>
+                  <div class="space-y-3">
+                    <label class="text-[10px] font-black uppercase tracking-wide text-primary ml-1">Requested Principal (₹)</label>
+                    <input type="number" id="loan_amount" class="w-full bg-background border-2 border-primary/10 rounded px-6 py-4 text-xl font-black text-primary focus:outline-none focus:border-primary transition-all" value="2500000">
+                  </div>
+                </div>
+                
+                <div class="mb-12 space-y-3">
+                  <label class="text-[10px] font-black uppercase tracking-wide text-muted-foreground ml-1">Amortization Period (Months)</label>
+                  <input type="number" id="loan_term" class="w-full bg-background border-2 rounded px-6 py-4 text-sm font-bold focus:outline-none focus:border-primary transition-all" value="120" min="12" max="360">
+                </div>
+                
+                <div class="flex justify-between pt-8 border-t border-dashed">
+                  <button class="px-8 py-4 rounded text-[10px] font-black text-muted-foreground hover:text-foreground transition-all border-2 uppercase tracking-wide flex items-center gap-2" onclick="goToStep(1)">
+                    <i data-lucide="arrow-left" size="16"></i> Previous
+                  </button>
+                  <button class="bg-primary text-primary-foreground px-10 py-4 rounded text-sm font-black shadow-sm shadow-primary/20 hover:translate-y-[-2px] transition-all flex items-center gap-3 uppercase tracking-wide" onclick="goToStep(3)">
+                    Proceed <i data-lucide="arrow-right" size="18"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div id="step-3" class="step-content hidden animate-in fade-in slide-in-from-bottom-6 duration-500">
+                <div class="mb-10">
+                  <h2 class="text-xl font-semibold text-foreground">Collateral & Assets</h2>
+                  <p class="text-sm text-muted-foreground font-medium mt-1">Verification of current institutional and personal holdings.</p>
+                </div>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
+                  <div class="space-y-3">
+                    <label class="text-[10px] font-black uppercase tracking-wide text-muted-foreground ml-1">Residential Valuation (₹)</label>
+                    <input type="number" id="residential_assets_value" class="w-full bg-background border-2 rounded px-6 py-4 text-sm font-bold focus:outline-none focus:border-primary transition-all" value="500000">
+                  </div>
+                  <div class="space-y-3">
+                    <label class="text-[10px] font-black uppercase tracking-wide text-muted-foreground ml-1">Commercial Valuation (₹)</label>
+                    <input type="number" id="commercial_assets_value" class="w-full bg-background border-2 rounded px-6 py-4 text-sm font-bold focus:outline-none focus:border-primary transition-all" value="200000">
+                  </div>
+                </div>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-10">
+                  <div class="space-y-3">
+                    <label class="text-[10px] font-black uppercase tracking-wide text-muted-foreground ml-1">Luxury Holdings (₹)</label>
+                    <input type="number" id="luxury_assets_value" class="w-full bg-background border-2 rounded px-6 py-4 text-sm font-bold focus:outline-none focus:border-primary transition-all" value="150000">
+                  </div>
+                  <div class="space-y-3">
+                    <label class="text-[10px] font-black uppercase tracking-wide text-muted-foreground ml-1">Liquid Capital (₹)</label>
+                    <input type="number" id="bank_asset_value" class="w-full bg-background border-2 rounded px-6 py-4 text-sm font-bold focus:outline-none focus:border-primary transition-all" value="450000">
+                  </div>
+                </div>
+
+                <div class="p-6 rounded bg-muted/30 border-2 border-primary/5 mb-10 relative overflow-hidden group">
+                  <div class="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform"></div>
+                  <div class="flex items-center gap-3 mb-6 relative z-10">
+                    <div class="w-10 h-10 rounded bg-primary/10 flex items-center justify-center text-primary shadow-inner">
+                      <i data-lucide="settings" size="20"></i>
+                    </div>
+                    <span class="text-xs font-black uppercase tracking-[0.2em]">Settlement Configuration</span>
+                  </div>
+                  <div class="space-y-2 relative z-10">
+                    <label class="text-[10px] font-black uppercase tracking-wide text-muted-foreground ml-1">Preferred Settlement Cycle</label>
+                    <select id="emi_day" class="w-full bg-background border-2 rounded px-5 py-3.5 text-sm font-bold focus:outline-none focus:border-primary transition-all cursor-pointer shadow-sm">
+                      <option value="1">1st of the month</option>
+                      <option value="5" selected>5th of the month</option>
+                      <option value="10">10th of the month</option>
+                      <option value="15">15th of the month</option>
+                      <option value="25">25th of the month</option>
+                    </select>
+                  </div>
+                </div>
+                
+                <div class="flex justify-between pt-8 border-t border-dashed">
+                  <button class="px-8 py-4 rounded text-[10px] font-black text-muted-foreground hover:text-foreground transition-all border-2 uppercase tracking-wide flex items-center gap-2" onclick="goToStep(2)">
+                    <i data-lucide="arrow-left" size="16"></i> Previous
+                  </button>
+                  <button id="predict-btn" class="bg-primary text-primary-foreground px-10 py-4 rounded text-sm font-black shadow-sm shadow-primary/20 hover:translate-y-[-2px] transition-all flex items-center gap-3 uppercase tracking-wide">
+                    <i data-lucide="zap" size="18"></i> Execute Evaluation
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Result Section -->
+          <div id="result-panel" class="lg:col-span-5 space-y-8 lg:sticky lg:top-6">
+            <div class="bg-card p-6 rounded border shadow-sm flex flex-col items-center text-center relative overflow-hidden group">
+              <div class="absolute top-0 right-0 w-48 h-48 bg-muted/5 rounded-full -mr-24 -mt-24 transition-transform group-hover:scale-110"></div>
+              <div class="w-24 h-24 rounded bg-muted mb-10 flex items-center justify-center border shadow-inner text-muted-foreground relative z-10">
+                <i data-lucide="search" size="48"></i>
+              </div>
+              <h3 class="text-xl font-semibold text-foreground mb-3 relative z-10 uppercase tracking-wide">Awaiting Submission</h3>
+              <p class="text-sm text-muted-foreground font-medium leading-relaxed relative z-10">Complete all institutional verification steps to generate a real-time eligibility evaluation from our predictive engine.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/api-client.js"></script>
+  <script src="js/dashboard.js"></script>
+  <script src="js/loan-predictor.js"></script>
+  <script>
+    let currentStep = 1;
+
+    function goToStep(step) {
+      currentStep = step;
+      document.querySelectorAll('.step-content').forEach(el => el.classList.add('hidden'));
+      document.getElementById(`step-${step}`).classList.remove('hidden');
+
+      // Progress bar
+      const pct = (step / 3) * 100;
+      document.getElementById('progress-bar').style.width = pct + '%';
+
+      // Update step buttons
+      const btnIds = ['step-1-btn', 'step-2-btn', 'step-3-btn'];
+      btnIds.forEach((id, i) => {
+        const btn = document.getElementById(id);
+        const s = i + 1;
+        const numSpan = btn.querySelector('span:first-child');
+        
+        if (s === step) {
+          btn.className = 'flex-1 flex items-center gap-3 px-6 py-3 rounded justify-center text-[10px] font-black uppercase tracking-[0.2em] transition-all bg-card text-foreground shadow-md border-2 border-primary/10 ring-2 ring-primary/5';
+          numSpan.className = 'w-6 h-6 rounded-lg flex items-center justify-center bg-primary text-primary-foreground shadow-lg';
+        } else if (s < step) {
+          btn.className = 'flex-1 flex items-center gap-3 px-6 py-3 rounded justify-center text-[10px] font-black uppercase tracking-[0.2em] transition-all text-primary hover:bg-primary/5';
+          numSpan.className = 'w-6 h-6 rounded-lg flex items-center justify-center bg-primary/10 text-primary';
+        } else {
+          btn.className = 'flex-1 flex items-center gap-3 px-6 py-3 rounded justify-center text-[10px] font-black uppercase tracking-[0.2em] transition-all text-muted-foreground hover:text-foreground';
+          numSpan.className = 'w-6 h-6 rounded-lg flex items-center justify-center bg-muted-foreground/10';
+        }
+      });
+      lucide.createIcons();
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const user = await window.api.verifySession();
+      if (!user) { window.location.href = 'auth.html'; return; }
+      window.currentUser = user;
+      await initDashboard();
+      document.getElementById('predict-btn').onclick = handlePredict;
+    });
+
+    async function handlePredict() {
+      const btn = document.getElementById('predict-btn');
+      btn.disabled = true;
+      btn.innerHTML = '<i data-lucide="loader-2" size="18" class="animate-spin"></i> Executing Analysis...';
+      lucide.createIcons();
+
+      const formData = {
+        education: document.getElementById('education').value,
+        self_employed: document.getElementById('self_employed').value,
+        no_of_dependents: Number(document.getElementById('no_of_dependents').value),
+        cibil_score: Number(document.getElementById('cibil_score').value),
+        income_annum: Number(document.getElementById('income_annum').value),
+        loan_amount: Number(document.getElementById('loan_amount').value),
+        loan_term: Number(document.getElementById('loan_term').value),
+        residential_assets_value: Number(document.getElementById('residential_assets_value').value),
+        commercial_assets_value: Number(document.getElementById('commercial_assets_value').value),
+        luxury_assets_value: Number(document.getElementById('luxury_assets_value').value),
+        bank_asset_value: Number(document.getElementById('bank_asset_value').value),
+      };
+
+      try {
+        const result = await window.api.predictLoan(formData);
+        showResult(result, formData);
+      } catch (err) {
+        alert('Analysis protocol failed: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i data-lucide="zap" size="18"></i> Execute Evaluation';
+        lucide.createIcons();
+      }
+    }
+
+    function showResult(result, formData) {
+      const panel = document.getElementById('result-panel');
+      const isApproved = result.status === 'Approved';
+      const colorClass = isApproved ? 'bg-primary/10 text-primary border-primary/20' : 'bg-destructive/10 text-destructive border-destructive/20';
+      const icon = isApproved ? 'shield-check' : 'shield-alert';
+      const textColorClass = isApproved ? 'text-primary' : 'text-destructive';
+
+      const emi_day = document.getElementById('emi_day').value;
+      const amount = parseFloat(formData.loan_amount);
+      const tenure = parseInt(formData.loan_term);
+      const rate = 10.5 / 12 / 100;
+      const monthly_emi = Math.round((amount * rate * Math.pow(1 + rate, tenure)) / (Math.pow(1 + rate, tenure) - 1));
+
+      var fiBars = '';
+      if (result.feature_importance && result.feature_importance.length) {
+        fiBars = '<div class="mt-8 space-y-4">';
+        result.feature_importance.forEach(function(fi) {
+          fiBars += '<div class="space-y-2">' +
+            '<div class="flex justify-between text-[10px] font-black uppercase tracking-wide">' +
+              '<span class="text-foreground">' + fi.feature + '</span>' +
+              '<span class="text-muted-foreground">' + fi.importance + '%</span>' +
+            '</div>' +
+            '<div class="h-1.5 w-full bg-muted rounded-full overflow-hidden shadow-inner">' +
+              '<div class="h-full bg-primary rounded-full transition-all duration-1000" style="width: ' + fi.importance + '%"></div>' +
+            '</div>' +
+          '</div>';
+        });
+        fiBars += '</div>';
+      }
+
+      var riskColor = 'text-primary';
+      if (result.risk_score > 60) riskColor = 'text-destructive';
+      else if (result.risk_score > 30) riskColor = 'text-amber-500';
+
+      panel.innerHTML =
+        '<div class="bg-card p-6 rounded border shadow-md flex flex-col items-center relative overflow-hidden animate-in zoom-in-95 duration-500">' +
+          '<div class="absolute top-0 right-0 w-48 h-48 ' + (isApproved ? 'bg-primary/5' : 'bg-destructive/5') + ' rounded-full -mr-24 -mt-24 blur-3xl"></div>' +
+          '<div class="w-24 h-24 rounded ' + colorClass + ' mb-10 flex items-center justify-center border shadow-sm relative z-10">' +
+            '<i data-lucide="' + icon + '" size="48"></i>' +
+          '</div>' +
+          '<div class="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full text-[9px] font-black tracking-[0.2em] uppercase bg-muted border-2 mb-6 relative z-10">' +
+            '<i data-lucide="hash" size="12"></i> Statistical Outcome' +
+          '</div>' +
+          '<h2 class="text-3xl font-semibold mb-4 ' + textColorClass + ' relative z-10">' + result.status + '</h2>' +
+          '<p class="text-sm text-muted-foreground font-medium mb-10 relative z-10">Institutional engine evaluated the submission with a <span class="font-black text-foreground">' + result.confidence + '%</span> confidence interval.</p>' +
+          
+          '<div class="w-full grid grid-cols-2 gap-4 mb-4 relative z-10">' +
+            '<div class="p-6 rounded border-2 bg-muted/20 text-left shadow-inner">' +
+              '<p class="text-[9px] font-black text-muted-foreground uppercase tracking-wide mb-2">Monthly EMI</p>' +
+              '<p class="text-xl font-semibold">' + window.loanPredictor.formatCurrency(monthly_emi) + '</p>' +
+            '</div>' +
+            '<div class="p-6 rounded border-2 bg-muted/20 text-left shadow-inner">' +
+              '<p class="text-[9px] font-black text-muted-foreground uppercase tracking-wide mb-2">Settlement Day</p>' +
+              '<p class="text-xl font-semibold">' + emi_day + (emi_day == 1 ? 'st' : 'th') + '</p>' +
+            '</div>' +
+          '</div>' +
+          
+          '<div class="w-full grid grid-cols-2 gap-4 mb-10 relative z-10">' +
+            '<div class="p-6 rounded border-2 bg-muted/20 text-left shadow-inner">' +
+              '<p class="text-[9px] font-black text-muted-foreground uppercase tracking-wide mb-2">Risk Score</p>' +
+              '<p class="text-xl font-semibold ' + riskColor + '">' + result.risk_score + '</p>' +
+            '</div>' +
+            '<div class="p-6 rounded border-2 bg-muted/20 text-left shadow-inner">' +
+              '<p class="text-[9px] font-black text-muted-foreground uppercase tracking-wide mb-2">PD Index</p>' +
+              '<p class="text-xl font-semibold">' + result.probability_of_default + '%</p>' +
+            '</div>' +
+          '</div>' +
+          
+          '<button id="submit-application-btn" class="w-full bg-primary text-primary-foreground py-5 rounded text-sm font-black shadow-[0_20px_50px_rgba(var(--primary-rgb),0.25)] hover:translate-y-[-3px] active:translate-y-[0px] transition-all flex items-center justify-center gap-4 relative z-10 uppercase tracking-[0.2em]">' +
+            'Authorize Submission' +
+            '<i data-lucide="send" size="18" class="group-hover:translate-x-1 transition-transform"></i>' +
+          '</button>' +
+        '</div>' +
+        
+        '<div class="bg-card p-6 rounded border shadow-sm relative overflow-hidden group">' +
+          '<div class="flex items-center gap-3 mb-6">' +
+            '<div class="w-10 h-10 rounded bg-primary/10 flex items-center justify-center text-primary shadow-inner">' +
+              '<i data-lucide="bar-chart-2" size="20"></i>' +
+            '</div>' +
+            '<div>' +
+              '<h3 class="text-sm font-black uppercase tracking-[0.15em] text-foreground">Influence Metrics</h3>' +
+              '<p class="text-[10px] text-muted-foreground font-medium uppercase tracking-tight">Primary decision drivers</p>' +
+            '</div>' +
+          '</div>' +
+          fiBars +
+        '</div>';
+
+      lucide.createIcons();
+      document.getElementById('submit-application-btn').onclick = function() {
+        submitApplication({ status: result.status, confidence: result.confidence, probability_of_default: result.probability_of_default, risk_score: result.risk_score, monthly_emi: monthly_emi, emi_day: emi_day }, formData);
+      };
+    }
+
+    async function submitApplication(result, formData) {
+      const btn = document.getElementById('submit-application-btn');
+      btn.disabled = true;
+      btn.innerHTML = '<i data-lucide="loader-2" size="18" class="animate-spin"></i> Submitting...';
+      lucide.createIcons();
+
+      const user = window.currentUser;
+      try {
+        await window.api.createApplication({
+          applicant_name: user.full_name || user.email,
+          no_of_dependents: formData.no_of_dependents,
+          education: formData.education,
+          self_employed: formData.self_employed,
+          income_annum: formData.income_annum,
+          loan_amount: formData.loan_amount,
+          loan_term: formData.loan_term,
+          cibil_score: formData.cibil_score,
+          emi_day: result.emi_day,
+          monthly_emi: result.monthly_emi,
+          residential_assets_value: formData.residential_assets_value,
+          commercial_assets_value: formData.commercial_assets_value,
+          luxury_assets_value: formData.luxury_assets_value,
+          bank_asset_value: formData.bank_asset_value,
+          prediction_status: result.status,
+          confidence: result.confidence,
+          probability_of_default: result.probability_of_default,
+          risk_score: result.risk_score,
+        });
+        alert('Institutional submission successfully processed.');
+        window.location.href = 'applications.html';
+      } catch (err) {
+        alert('Submission failed: ' + err.message);
+        btn.disabled = false;
+        btn.innerHTML = 'Authorize Submission <i data-lucide="send" size="18"></i>';
+        lucide.createIcons();
+      }
+    }
+  </script>
+</body>
+</html>

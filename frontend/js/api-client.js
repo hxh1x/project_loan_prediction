@@ -28,10 +28,17 @@ const api = {
   get: (path) => api._request("GET", path),
   post: (path, body) => api._request("POST", path, body),
   patch: (path, body) => api._request("PATCH", path, body),
+  delete: (path) => api._request("DELETE", path),
 
   // ── Auth ──────────────────────────────────────────────
-  async signUp(email, password, fullName) {
-    return api.post("/auth/signup", { email, password, full_name: fullName });
+  async signUp(data) {
+    // If first arg is an object, use it directly, otherwise build object from args (legacy support)
+    const payload = (typeof data === 'object') ? data : { 
+      email: arguments[0], 
+      password: arguments[1], 
+      full_name: arguments[2] 
+    };
+    return api.post("/auth/signup", payload);
   },
 
   async signIn(email, password) {
@@ -74,6 +81,22 @@ const api = {
   // ── Profiles ──────────────────────────────────────────
   getProfiles: () => api.get("/profiles"),
   getMyProfile: () => api.get("/profiles/me"),
+  updateProfile: (data) => api.post("/auth/profile", data),
+  async uploadProfilePhoto(file) {
+    const formData = new FormData();
+    formData.append("file", file);
+    const res = await fetch(`${API_BASE}/auth/profile-photo`, {
+      method: "POST",
+      headers: { "Authorization": `Bearer ${this._token}` },
+      body: formData,
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Upload failed");
+    return data;
+  },
+
+  // ── Users ─────────────────────────────────────────────
+  updateUserStatus: (id, status) => api.patch(`/users/${id}/status`, { status }),
 
   // ── Loan Applications ─────────────────────────────────
   getApplications: () => api.get("/loan-applications"),
@@ -86,7 +109,31 @@ const api = {
 
   // ── Stats ─────────────────────────────────────────────
   getManagerStats: () => api.get("/stats/manager"),
+  getManagerChartData: () => api.get("/stats/manager/charts"),
+  getManagerCustomerDetails: (id) => api.get("/manager/customer/" + id),
   getCustomerStats: () => api.get("/stats/customer"),
+
+  // ── ML Prediction (Random Forest) ────────────────────
+  predictLoan: (data) => api.post("/predict", data),
+  getModelMeta: () => api.get("/ml/meta"),
+
+  // ── EMI Management ─────────────────────────────────
+  processEmis: () => api.post("/emi/process"),
+  getEmiSchedules: () => api.get("/emi/schedules"),
+  getEmiSettings: (loanId) => api.get("/emi/settings/" + loanId),
+  updateEmiSettings: (loanId, data) => api.post("/emi/settings/" + loanId, data),
+  payEmi: (emiId, data) => api.post("/emi/pay/" + emiId, data),
+  getEmiSummary: () => api.get("/emi/summary"),
+  getEmiHealthScore: () => api.get("/emi/health-score"),
+  requestReschedule: (loanId, emi_day) => api.post("/emi/reschedule/" + loanId, { emi_day }),
+  getEmiOverdue: () => api.get("/emi/overdue"),
+
+  // ── Notifications ──────────────────────────────────
+  getNotifications: () => api.get("/notifications"),
+  markNotificationRead: (id) => api.post("/notifications/" + id + "/read"),
+  markAllRead: () => api.post("/notifications/read-all"),
+  getUnreadCount: () => api.get("/notifications/unread-count"),
+  deleteNotification: (id) => api.delete("/notifications/" + id),
 };
 
 window.api = api;

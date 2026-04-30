@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lendmark — Predictive Intelligence</title>
+  <meta name="description" content="Lendmark Institutional Banking — AI model performance and portfolio risk analytics.">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+  <script src="js/theme-config.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    .gauge-container { position: relative; width: 180px; height: 180px; margin: 0 auto; }
+    .gauge-svg { transform: rotate(-90deg); }
+    .gauge-bg { fill: none; stroke: hsl(var(--muted)); stroke-width: 3; }
+    .gauge-fill { fill: none; stroke: hsl(var(--primary)); stroke-width: 3; stroke-linecap: round; transition: stroke-dasharray 1s ease-out; }
+  </style>
+</head>
+<body class="bg-background text-foreground antialiased">
+  <div class="app-layout">
+    <div id="sidebar-container" class="sidebar-wrapper"></div>
+    <main class="main-content">
+      <div class="p-6 max-w-[1100px] mx-auto space-y-8">
+        
+        <!-- Page Header -->
+        <div class="page-header">
+          <div class="flex items-center justify-between gap-4">
+            <div>
+              <h1>Predictive Intelligence</h1>
+              <p>Institutional model performance and global portfolio risk assessment.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Metrics Overview -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="stat-card">
+            <p class="stat-label">Model Accuracy</p>
+            <p id="model-accuracy" class="stat-value">0%</p>
+            <p id="model-type" class="text-[10px] text-muted-foreground font-medium mt-1 uppercase tracking-wider">RF Ensemble</p>
+          </div>
+
+          <div class="stat-card">
+            <p class="stat-label">Mean Confidence</p>
+            <p id="avg-confidence" class="stat-value">0%</p>
+            <p class="text-[10px] text-muted-foreground font-medium mt-1 uppercase tracking-wider">Average Probability</p>
+          </div>
+
+          <div class="stat-card">
+            <p class="stat-label">Critical Alerts</p>
+            <p id="high-risk-count" class="stat-value text-destructive">0</p>
+            <p class="text-[10px] text-muted-foreground font-medium mt-1 uppercase tracking-wider">High Risk Portfolios</p>
+          </div>
+
+          <div class="stat-card">
+            <p class="stat-label">Total Evaluations</p>
+            <p id="total-predictions" class="stat-value">0</p>
+            <p class="text-[10px] text-muted-foreground font-medium mt-1 uppercase tracking-wider">Historical Audits</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          <!-- Left Column -->
+          <div class="lg:col-span-4 space-y-6">
+            <!-- Risk Gauge -->
+            <div class="panel">
+              <div class="panel-header">
+                <h3>Global Risk Index</h3>
+                <i data-lucide="gauge" size="14"></i>
+              </div>
+              <div class="p-8 text-center">
+                <div class="gauge-container mb-6">
+                  <svg class="gauge-svg" viewBox="0 0 36 36" width="100%" height="100%">
+                    <path class="gauge-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    <path id="risk-gauge-fill" class="gauge-fill" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                  </svg>
+                  <div class="absolute inset-0 flex flex-col items-center justify-center">
+                    <span class="text-3xl font-bold font-number" id="global-risk-val">--</span>
+                    <span class="text-[9px] font-black uppercase tracking-widest opacity-40">Score</span>
+                  </div>
+                </div>
+                <div id="risk-badge" class="badge badge-approved mx-auto py-1 px-4 text-[10px]">Low Risk</div>
+              </div>
+            </div>
+
+            <!-- Influence Metrics -->
+            <div class="panel">
+              <div class="panel-header">
+                <h3>Decision Weights</h3>
+                <i data-lucide="bar-chart-2" size="14"></i>
+              </div>
+              <div id="feature-importance-list" class="p-5 space-y-5">
+                <p class="text-xs text-muted-foreground italic text-center py-10">Initializing risk vectors...</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column -->
+          <div class="lg:col-span-8 space-y-6">
+            <!-- Evaluation Table -->
+            <div class="panel">
+              <div class="panel-header">
+                <h3>Evaluation Registry</h3>
+                <i data-lucide="history" size="14"></i>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full">
+                  <thead>
+                    <tr>
+                      <th>Candidate</th>
+                      <th>Outcome</th>
+                      <th>Confidence</th>
+                      <th>Risk Index</th>
+                      <th class="text-right">Audit Date</th>
+                    </tr>
+                  </thead>
+                  <tbody id="prediction-table-body">
+                    <tr><td colspan="5" class="text-center py-20 text-xs text-muted-foreground italic animate-pulse">Synchronizing historical audits...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Engine Configuration -->
+            <div class="panel">
+              <div class="panel-header">
+                <h3>Engine Specification</h3>
+                <i data-lucide="cpu" size="14"></i>
+              </div>
+              <div id="model-details-grid" class="p-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <p class="text-xs text-muted-foreground italic text-center py-4 sm:col-span-2">Retrieving metadata...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/api-client.js"></script>
+  <script src="js/dashboard.js"></script>
+  <script src="js/loan-predictor.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const user = await window.api.verifySession();
+      if (!user) { window.location.href = 'auth.html'; return; }
+      if (user.role !== 'manager') { window.location.href = 'index.html'; return; }
+      window.currentUser = user;
+      await initDashboard();
+      await fetchData();
+    });
+
+    async function fetchData() {
+      try {
+        const [apps, meta] = await Promise.all([
+          window.api.getApplications().catch(() => []),
+          window.api.getModelMeta().catch(() => ({ accuracy: 0, n_estimators: 200 }))
+        ]);
+
+        renderSummary(apps, meta);
+        renderTable(apps);
+        renderFeatureImportance(meta.feature_importances || {});
+        renderEngineDetails(meta);
+      } catch (err) { console.error(err); }
+    }
+
+    function renderSummary(apps, meta) {
+      document.getElementById('model-accuracy').textContent = (meta.accuracy || 0).toFixed(1) + '%';
+      document.getElementById('model-type').textContent = `RF Ensemble (${meta.n_estimators || 200} Trees)`;
+      
+      const total = apps.length;
+      document.getElementById('total-predictions').textContent = total;
+
+      if (total > 0) {
+        const avgConf = apps.reduce((s, a) => s + parseFloat(a.confidence || 0), 0) / total;
+        const avgRisk = apps.reduce((s, a) => s + parseFloat(a.risk_score || 0), 0) / total;
+        const highRisk = apps.filter(a => parseFloat(a.risk_score || 0) > 60).length;
+
+        document.getElementById('avg-confidence').textContent = avgConf.toFixed(1) + '%';
+        document.getElementById('high-risk-count').textContent = highRisk;
+        document.getElementById('global-risk-val').textContent = avgRisk.toFixed(1);
+        document.getElementById('risk-gauge-fill').setAttribute('stroke-dasharray', `${avgRisk}, 100`);
+
+        const badge = document.getElementById('risk-badge');
+        if (avgRisk < 30) { badge.textContent = 'LOW RISK'; badge.className = 'badge badge-approved mx-auto py-1 px-4 text-[10px]'; }
+        else if (avgRisk < 60) { badge.textContent = 'MODERATE'; badge.className = 'badge badge-pending mx-auto py-1 px-4 text-[10px]'; }
+        else { badge.textContent = 'HIGH RISK'; badge.className = 'badge badge-rejected mx-auto py-1 px-4 text-[10px]'; }
+      }
+    }
+
+    function renderTable(apps) {
+      const tbody = document.getElementById('prediction-table-body');
+      if (apps.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center py-20 text-xs text-muted-foreground italic">No historical movements detected.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = apps.slice(0, 15).map(a => {
+        const isAppr = a.prediction_status === 'Approved';
+        const risk = parseFloat(a.risk_score || 0);
+        
+        return `
+          <tr>
+            <td>
+              <p class="font-semibold text-xs text-foreground">${a.applicant_name}</p>
+              <p class="text-[9px] text-muted-foreground font-bold uppercase opacity-50">REF: ${a.id.split('-')[0].toUpperCase()}</p>
+            </td>
+            <td><span class="badge ${isAppr ? 'badge-approved' : 'badge-rejected'}">${a.prediction_status}</span></td>
+            <td class="font-bold text-xs text-muted-foreground/80">${parseFloat(a.confidence || 0).toFixed(1)}%</td>
+            <td>
+              <div class="flex items-center gap-3">
+                <div class="w-16 h-1.5 bg-muted rounded-full overflow-hidden">
+                  <div class="h-full ${risk > 60 ? 'bg-destructive' : (risk > 30 ? 'bg-amber-500' : 'bg-primary')}" style="width: ${risk}%"></div>
+                </div>
+                <span class="text-[10px] font-bold text-muted-foreground">${risk.toFixed(1)}</span>
+              </div>
+            </td>
+            <td class="text-right text-[10px] font-bold text-muted-foreground uppercase opacity-50">
+              ${new Date(a.created_at).toLocaleDateString()}
+            </td>
+          </tr>`;
+      }).join('');
+      lucide.createIcons();
+    }
+
+    function renderFeatureImportance(fi) {
+      const list = document.getElementById('feature-importance-list');
+      const labels = {
+        'cibil_score': 'Credit Score (CIBIL)',
+        'loan_term': 'Amortization Period',
+        'loan_amount': 'Requested Principal',
+        'income_annum': 'Annual Revenue',
+        'luxury_assets_value': 'Luxury Holdings',
+        'commercial_assets_value': 'Commercial Assets',
+        'residential_assets_value': 'Residential Assets',
+        'bank_asset_value': 'Liquid Capital',
+        'no_of_dependents': 'Dependent Index',
+        'self_employed': 'Corporate Entity',
+        'education': 'Academic Tier'
+      };
+
+      const sorted = Object.entries(fi)
+        .map(([k, v]) => ({ name: labels[k] || k, val: v * 100 }))
+        .sort((a, b) => b.val - a.val);
+
+      list.innerHTML = sorted.slice(0, 8).map(item => `
+        <div class="space-y-1.5">
+          <div class="flex justify-between text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
+            <span>${item.name}</span>
+            <span class="text-foreground">${item.val.toFixed(1)}%</span>
+          </div>
+          <div class="w-full h-1 bg-muted rounded-full overflow-hidden">
+            <div class="h-full bg-primary" style="width: ${item.val}%"></div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderEngineDetails(meta) {
+      const grid = document.getElementById('model-details-grid');
+      const details = [
+        ['Architecture', 'Random Forest Classifier'],
+        ['Ensemble Size', `${meta.n_estimators || 200} Estimators`],
+        ['Training Set', meta.n_samples_train ? meta.n_samples_train.toLocaleString() + ' Entries' : '4,269 Entries'],
+        ['Validation Set', meta.n_samples_test ? meta.n_samples_test.toLocaleString() + ' Entries' : '854 Entries'],
+        ['Compliance', 'RBI-AI Framework v2.1']
+      ];
+
+      grid.innerHTML = details.map(d => `
+        <div class="p-4 rounded bg-muted/20 border border-border/40">
+          <p class="text-[9px] font-black uppercase tracking-widest text-muted-foreground mb-1">${d[0]}</p>
+          <p class="text-xs font-bold text-foreground">${d[1]}</p>
+        </div>
+      `).join('');
+    }
+  </script>
+</body>
+</html>

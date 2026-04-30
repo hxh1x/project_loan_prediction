@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lendmark — Institutional Profile Review</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+  <script src="js/theme-config.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-background text-foreground antialiased">
+  <div class="app-layout">
+    <div id="sidebar-container" class="sidebar-wrapper"></div>
+    <main class="main-content">
+      <div class="p-6 max-w-[1200px] mx-auto space-y-6">
+
+        <!-- Back Button & Quick Actions -->
+        <div class="flex items-center justify-between">
+          <button onclick="window.location.href='customers.html'" class="btn-secondary text-xs gap-2">
+            <i data-lucide="arrow-left" size="14"></i> Back to Directory
+          </button>
+          <div class="flex gap-2">
+            <button onclick="openTransactionModal()" class="btn-primary text-xs py-2 px-4">
+              <i data-lucide="plus" size="14"></i> Ledger Entry
+            </button>
+          </div>
+        </div>
+
+        <div id="loading-state" class="flex flex-col items-center justify-center py-32 space-y-4">
+          <div class="w-10 h-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
+          <p class="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Retrieving Institutional Record...</p>
+        </div>
+
+        <div id="content" class="hidden space-y-6">
+          <!-- Profile Header Panel -->
+          <div class="panel p-8 relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full -mr-48 -mt-48 blur-3xl"></div>
+            <div class="relative z-10 flex flex-col lg:flex-row gap-10 items-start">
+              <div class="relative group">
+                <div class="w-40 h-40 rounded bg-muted border-4 border-background shadow-2xl overflow-hidden shrink-0">
+                  <img id="cust-photo" src="" class="w-full h-full object-cover hidden" alt="Customer Photo">
+                  <div id="cust-photo-placeholder" class="w-full h-full flex items-center justify-center bg-primary/10 text-primary text-5xl font-black">U</div>
+                </div>
+                <div id="verified-badge" class="absolute -bottom-2 -right-2 bg-primary text-primary-foreground p-1.5 rounded-full shadow-lg border-2 border-background hidden">
+                  <i data-lucide="shield-check" size="16"></i>
+                </div>
+              </div>
+              
+              <div class="flex-1 space-y-6 w-full">
+                <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+                  <div>
+                    <div class="flex items-center gap-3 mb-1">
+                      <h1 id="cust-name" class="text-3xl font-black tracking-tight text-foreground">--</h1>
+                      <span id="cust-status" class="badge">--</span>
+                    </div>
+                    <div class="flex items-center gap-4">
+                      <p id="cust-acc" class="text-xs font-mono font-bold text-muted-foreground uppercase tracking-widest">ACCXXXX</p>
+                      <span class="text-[10px] text-muted-foreground">•</span>
+                      <p id="cust-joined" class="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Joined --</p>
+                    </div>
+                  </div>
+                  <div class="flex gap-2">
+                    <button id="approve-btn" class="hidden btn-primary text-xs py-2.5 px-6">Approve Account</button>
+                    <button id="reject-btn" class="hidden btn-secondary text-xs py-2.5 px-6 border-destructive/30 text-destructive hover:bg-destructive hover:text-white">Reject Account</button>
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 p-6 bg-muted/20 rounded border border-border/50">
+                  <div class="space-y-4">
+                    <div>
+                      <p class="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Email Address</p>
+                      <p id="cust-email" class="text-sm font-semibold text-foreground flex items-center gap-2">
+                        <i data-lucide="mail" size="12" class="text-muted-foreground"></i> --
+                      </p>
+                    </div>
+                    <div>
+                      <p class="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Phone Number</p>
+                      <p id="cust-phone" class="text-sm font-semibold text-foreground flex items-center gap-2">
+                        <i data-lucide="phone" size="12" class="text-muted-foreground"></i> --
+                      </p>
+                    </div>
+                  </div>
+                  <div class="space-y-4">
+                    <div>
+                      <p class="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Date of Birth</p>
+                      <p id="cust-dob" class="text-sm font-semibold text-foreground flex items-center gap-2">
+                        <i data-lucide="calendar" size="12" class="text-muted-foreground"></i> --
+                      </p>
+                    </div>
+                    <div>
+                      <p class="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Identity Status</p>
+                      <p id="cust-identity-status" class="text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5">
+                        <span class="w-1.5 h-1.5 rounded-full bg-muted"></span> Unverified
+                      </p>
+                    </div>
+                  </div>
+                  <div>
+                    <p class="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Residential Registry</p>
+                    <p id="cust-address" class="text-xs font-medium text-muted-foreground leading-relaxed">--</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Financial Analytics -->
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="stat-card border-l-4 border-l-primary">
+              <div class="flex items-center justify-between mb-2">
+                <p class="stat-label">Current Balance</p>
+                <i data-lucide="wallet" size="14" class="text-muted-foreground"></i>
+              </div>
+              <p id="stat-balance" class="stat-value text-2xl">₹0</p>
+            </div>
+            <div class="stat-card">
+              <div class="flex items-center justify-between mb-2">
+                <p class="stat-label">Total Portfolio</p>
+                <i data-lucide="briefcase" size="14" class="text-muted-foreground"></i>
+              </div>
+              <p id="stat-loans" class="stat-value text-2xl">0</p>
+            </div>
+            <div class="stat-card border-l-4 border-l-destructive">
+              <div class="flex items-center justify-between mb-2">
+                <p class="stat-label">Active Debt</p>
+                <i data-lucide="alert-circle" size="14" class="text-destructive"></i>
+              </div>
+              <p id="stat-debt" class="stat-value text-2xl text-destructive">₹0</p>
+            </div>
+            <div class="stat-card">
+              <div class="flex items-center justify-between mb-2">
+                <p class="stat-label">Repayment Health</p>
+                <i data-lucide="activity" size="14" class="text-primary"></i>
+              </div>
+              <div class="flex items-center gap-3">
+                <p id="stat-health" class="stat-value text-2xl">--</p>
+                <div class="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
+                  <div id="health-bar" class="h-full bg-primary" style="width: 0%"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Documentation & Records -->
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div class="lg:col-span-12">
+              <div class="panel">
+                <div class="border-b border-border px-6 flex items-center gap-8 overflow-x-auto whitespace-nowrap">
+                  <button onclick="setTab('loans')" id="tab-loans" class="py-4 text-[11px] font-black uppercase tracking-widest border-b-2 border-primary text-primary transition-all flex items-center gap-2">
+                    <i data-lucide="file-text" size="13"></i> Loan History
+                  </button>
+                  <button onclick="setTab('txns')" id="tab-txns" class="py-4 text-[11px] font-black uppercase tracking-widest border-b-2 border-transparent text-muted-foreground hover:text-foreground transition-all flex items-center gap-2">
+                    <i data-lucide="list" size="13"></i> Transaction Ledger
+                  </button>
+                  <button onclick="setTab('emis')" id="tab-emis" class="py-4 text-[11px] font-black uppercase tracking-widest border-b-2 border-transparent text-muted-foreground hover:text-foreground transition-all flex items-center gap-2">
+                    <i data-lucide="calendar-clock" size="13"></i> Repayment Schedule
+                  </button>
+                </div>
+
+                <!-- Views -->
+                <div id="view-loans" class="p-0 overflow-x-auto">
+                  <table class="w-full text-sm">
+                    <thead>
+                      <tr>
+                        <th>Loan Ref</th>
+                        <th>Amount</th>
+                        <th>Term</th>
+                        <th>EMI</th>
+                        <th>CIBIL</th>
+                        <th>ML Score</th>
+                        <th>Status</th>
+                        <th class="text-right">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody id="loan-list"></tbody>
+                  </table>
+                </div>
+
+                <div id="view-txns" class="p-0 overflow-x-auto hidden">
+                  <table class="w-full text-sm">
+                    <thead>
+                      <tr>
+                        <th>Ledger ID</th>
+                        <th>Category</th>
+                        <th>Institutional Note</th>
+                        <th>Value</th>
+                        <th>Current Balance</th>
+                        <th>Timestamp</th>
+                      </tr>
+                    </thead>
+                    <tbody id="txn-list"></tbody>
+                  </table>
+                </div>
+
+                <div id="view-emis" class="p-0 overflow-x-auto hidden">
+                  <table class="w-full text-sm">
+                    <thead>
+                      <tr>
+                        <th>EMI Index</th>
+                        <th>Associated Loan</th>
+                        <th>Maturity Date</th>
+                        <th>Amount Due</th>
+                        <th>Penalty Accrued</th>
+                        <th>Collection Status</th>
+                      </tr>
+                    </thead>
+                    <tbody id="emi-list"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- Loan Detail Modal -->
+  <div id="loan-modal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-[100] p-6">
+    <div class="bg-card border border-border shadow-2xl w-full max-w-2xl rounded-xl overflow-hidden max-h-[90vh] flex flex-col">
+      <div class="p-6 border-b flex items-center justify-between bg-muted/20">
+        <div>
+          <h3 class="font-black text-xs uppercase tracking-widest">Loan Portfolio Review</h3>
+          <p id="modal-loan-id" class="text-[10px] text-muted-foreground font-mono mt-1">REF-XXXX</p>
+        </div>
+        <button onclick="closeLoanModal()" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-muted transition-colors">
+          <i data-lucide="x" size="16"></i>
+        </button>
+      </div>
+      <div id="loan-modal-body" class="p-8 overflow-y-auto space-y-8"></div>
+    </div>
+  </div>
+
+  <!-- Transaction Modal -->
+  <div id="txn-modal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-[100] p-6">
+    <div class="bg-card border border-border shadow-2xl w-full max-w-md rounded-xl overflow-hidden">
+      <div class="p-6 border-b bg-muted/20">
+        <h3 class="font-black text-xs uppercase tracking-widest">Manual Ledger Entry</h3>
+      </div>
+      <div class="p-6 space-y-4">
+        <div class="space-y-2">
+          <label class="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Entry Type</label>
+          <select id="txn-type" class="w-full bg-background border-2 rounded px-4 py-3 text-sm font-bold focus:outline-none focus:border-primary">
+            <option value="credit">Institutional Credit (+)</option>
+            <option value="debit">Institutional Debit (-)</option>
+          </select>
+        </div>
+        <div class="space-y-2">
+          <label class="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Amount (INR)</label>
+          <input type="number" id="txn-amount" class="w-full bg-background border-2 rounded px-4 py-3 text-sm font-bold focus:outline-none focus:border-primary" placeholder="0.00">
+        </div>
+        <div class="space-y-2">
+          <label class="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Institutional Description</label>
+          <input type="text" id="txn-desc" class="w-full bg-background border-2 rounded px-4 py-3 text-sm font-bold focus:outline-none focus:border-primary" placeholder="e.g. Loan Disbursement, Administrative Fee">
+        </div>
+        <div class="pt-4 flex gap-3">
+          <button onclick="closeTransactionModal()" class="flex-1 btn-secondary text-xs py-3">Cancel</button>
+          <button onclick="submitTransaction()" class="flex-1 btn-primary text-xs py-3">Execute Entry</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/api-client.js"></script>
+  <script src="js/dashboard.js"></script>
+  <script src="js/loan-predictor.js"></script>
+  <script>
+    let currentData = null;
+    let customerId = null;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const user = await window.api.verifySession();
+      if (!user || user.role !== 'manager') { window.location.href = 'index.html'; return; }
+      window.currentUser = user;
+
+      const urlParams = new URLSearchParams(window.location.search);
+      customerId = urlParams.get('id');
+      if (!customerId) { window.location.href = 'customers.html'; return; }
+
+      await initDashboard();
+      await fetchCustomerDetails();
+    });
+
+    async function fetchCustomerDetails() {
+      try {
+        const data = await window.api.getManagerCustomerDetails(customerId);
+        currentData = data;
+        renderPage(data);
+        document.getElementById('loading-state').classList.add('hidden');
+        document.getElementById('content').classList.remove('hidden');
+        lucide.createIcons();
+      } catch (err) {
+        alert(err.message);
+        window.location.href = 'customers.html';
+      }
+    }
+
+    function renderPage(data) {
+      const p = data.profile;
+      
+      document.getElementById('cust-name').textContent = p.full_name || 'Unnamed Account';
+      document.getElementById('cust-email').textContent = p.email;
+      document.getElementById('cust-phone').textContent = p.phone || 'Not Registered';
+      document.getElementById('cust-dob').textContent = p.dob || '—';
+      document.getElementById('cust-address').textContent = p.address || 'No residential address on file.';
+      document.getElementById('cust-acc').textContent = p.account_number || 'PENDING';
+      document.getElementById('cust-joined').textContent = `Joined ${new Date(p.created_at).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })}`;
+
+      const isProfileComplete = p.phone && p.dob && p.address;
+      const verifiedBadge = document.getElementById('verified-badge');
+      const identityStatus = document.getElementById('cust-identity-status');
+      
+      if (isProfileComplete) {
+        verifiedBadge.classList.remove('hidden');
+        identityStatus.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-primary"></span> Verified Registry';
+        identityStatus.classList.add('text-primary');
+      }
+
+      const statusEl = document.getElementById('cust-status');
+      statusEl.textContent = p.account_status.toUpperCase();
+      statusEl.className = `badge ${p.account_status === 'approved' ? 'badge-approved' : p.account_status === 'rejected' ? 'badge-rejected' : 'badge-pending'}`;
+
+      if (p.profile_photo) {
+        const img = document.getElementById('cust-photo');
+        img.src = `/uploads/${p.profile_photo}`;
+        img.classList.remove('hidden');
+        document.getElementById('cust-photo-placeholder').classList.add('hidden');
+      } else {
+        document.getElementById('cust-photo-placeholder').textContent = (p.full_name || 'U').charAt(0).toUpperCase();
+      }
+
+      const approveBtn = document.getElementById('approve-btn');
+      const rejectBtn = document.getElementById('reject-btn');
+      
+      if (p.account_status === 'pending') {
+        approveBtn.classList.remove('hidden');
+        rejectBtn.classList.remove('hidden');
+        approveBtn.onclick = () => updateAccountStatus('approved');
+        rejectBtn.onclick = () => updateAccountStatus('rejected');
+      } else {
+        approveBtn.classList.add('hidden');
+        rejectBtn.classList.add('hidden');
+      }
+
+      // Financial Stats
+      const balance = data.transactions.length ? data.transactions[0].balance : 0;
+      document.getElementById('stat-balance').textContent = window.loanPredictor.formatCurrency(balance);
+      document.getElementById('stat-loans').textContent = data.loans.filter(l => l.status === 'approved').length;
+      
+      const outstanding = data.emis.filter(e => e.status !== 'paid').reduce((s, e) => s + (e.amount + (e.late_fee || 0) - (e.paid_amount || 0)), 0);
+      document.getElementById('stat-debt').textContent = window.loanPredictor.formatCurrency(outstanding);
+
+      const paidEmis = data.emis.filter(e => e.status === 'paid').length;
+      const overdueEmis = data.emis.filter(e => e.status === 'failed' || e.status === 'overdue').length;
+      const totalRelevantEmis = data.emis.filter(e => e.status !== 'upcoming').length;
+      const health = totalRelevantEmis === 0 ? 100 : Math.round((paidEmis / totalRelevantEmis) * 100);
+      document.getElementById('stat-health').textContent = health + '%';
+      document.getElementById('health-bar').style.width = health + '%';
+      if (health < 70) document.getElementById('health-bar').className = 'h-full bg-destructive';
+
+      renderLoans(data.loans);
+      renderTxns(data.transactions);
+      renderEmis(data.emis);
+    }
+
+    function renderLoans(loans) {
+      const tbody = document.getElementById('loan-list');
+      if (!loans.length) {
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center py-12 text-xs text-muted-foreground italic">No loan applications found in archive.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = loans.map(l => `
+        <tr>
+          <td class="font-bold text-foreground text-xs uppercase">${l.id.split('-')[0]}</td>
+          <td class="font-semibold text-foreground text-xs">${window.loanPredictor.formatCurrency(l.loan_amount)}</td>
+          <td class="text-xs text-muted-foreground font-medium">${l.loan_term} Mo</td>
+          <td class="text-xs font-semibold text-foreground">${window.loanPredictor.formatCurrency(l.monthly_emi || 0)}</td>
+          <td class="text-xs font-black text-foreground">${l.cibil_score}</td>
+          <td>
+            <div class="flex items-center gap-2">
+              <span class="badge ${l.prediction_status === 'Approved' ? 'badge-approved' : 'badge-rejected'}">${l.prediction_status}</span>
+              <span class="text-[10px] font-bold text-muted-foreground">${l.confidence}%</span>
+            </div>
+          </td>
+          <td><span class="badge ${l.status === 'approved' ? 'badge-approved' : l.status === 'rejected' ? 'badge-rejected' : 'badge-pending'}">${l.status}</span></td>
+          <td class="text-right">
+            <button onclick="viewLoanDetails('${l.id}')" class="btn-secondary text-[10px] py-1 px-3 gap-1.5 border-primary/10 hover:text-primary">
+              <i data-lucide="eye" size="11"></i> Audit
+            </button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function renderTxns(txns) {
+      const tbody = document.getElementById('txn-list');
+      if (!txns.length) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center py-12 text-xs text-muted-foreground italic">Institutional ledger is empty.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = txns.map(t => `
+        <tr>
+          <td class="text-[10px] font-mono text-muted-foreground uppercase">${t.id.split('-')[0]}</td>
+          <td>
+            <div class="flex items-center gap-2">
+              <div class="w-5 h-5 rounded-full flex items-center justify-center ${t.type === 'credit' ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}">
+                <i data-lucide="${t.type === 'credit' ? 'trending-up' : 'trending-down'}" size="10"></i>
+              </div>
+              <span class="text-[10px] font-black uppercase tracking-widest">${t.type}</span>
+            </div>
+          </td>
+          <td class="text-xs font-semibold text-foreground">${t.description}</td>
+          <td class="text-xs font-black ${t.type === 'credit' ? 'text-primary' : 'text-foreground'}">${t.type === 'credit' ? '+' : '−'}${window.loanPredictor.formatCurrency(t.amount)}</td>
+          <td class="text-xs font-bold text-foreground">${window.loanPredictor.formatCurrency(t.balance)}</td>
+          <td class="text-[10px] text-muted-foreground font-medium">${new Date(t.created_at).toLocaleString('en-IN')}</td>
+        </tr>
+      `).join('');
+    }
+
+    function renderEmis(emis) {
+      const tbody = document.getElementById('emi-list');
+      if (!emis.length) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center py-12 text-xs text-muted-foreground italic">No active repayment obligations found.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = emis.map(e => `
+        <tr>
+          <td class="text-xs font-black text-foreground">INSTALLMENT #${e.emi_number}</td>
+          <td class="text-[10px] font-mono text-muted-foreground uppercase">${e.loan_id.split('-')[0]}</td>
+          <td class="text-xs font-semibold text-foreground">${new Date(e.due_date).toLocaleDateString('en-IN')}</td>
+          <td class="text-xs font-bold text-foreground">${window.loanPredictor.formatCurrency(e.amount)}</td>
+          <td class="text-xs font-bold text-destructive">${e.late_fee > 0 ? window.loanPredictor.formatCurrency(e.late_fee) : '—'}</td>
+          <td><span class="badge ${e.status === 'paid' ? 'badge-approved' : e.status === 'upcoming' ? 'badge-pending' : 'badge-rejected'}">${e.status}</span></td>
+        </tr>
+      `).join('');
+    }
+
+    function viewLoanDetails(id) {
+      const l = currentData.loans.find(x => x.id === id);
+      document.getElementById('modal-loan-id').textContent = `INSTITUTIONAL REF: ${l.id.toUpperCase()}`;
+      
+      const sections = [
+        {
+          title: 'Core Submission',
+          items: [
+            ['Applicant', l.applicant_name],
+            ['Education', l.education],
+            ['Self Employed', l.self_employed],
+            ['Dependents', l.no_of_dependents]
+          ]
+        },
+        {
+          title: 'Financial Assessment',
+          items: [
+            ['Annual Income', window.loanPredictor.formatCurrency(l.income_annum)],
+            ['Loan Request', window.loanPredictor.formatCurrency(l.loan_amount)],
+            ['Monthly EMI', window.loanPredictor.formatCurrency(l.monthly_emi || 0)],
+            ['CIBIL Registry', l.cibil_score]
+          ]
+        },
+        {
+          title: 'Asset Valuation',
+          items: [
+            ['Residential', window.loanPredictor.formatCurrency(l.residential_assets_value)],
+            ['Commercial', window.loanPredictor.formatCurrency(l.commercial_assets_value)],
+            ['Luxury', window.loanPredictor.formatCurrency(l.luxury_assets_value)],
+            ['Bank Asset', window.loanPredictor.formatCurrency(l.bank_asset_value)]
+          ]
+        }
+      ];
+
+      document.getElementById('loan-modal-body').innerHTML = `
+        <div class="space-y-10">
+          ${sections.map(s => `
+            <div>
+              <h4 class="text-[10px] font-black uppercase tracking-[0.2em] text-primary mb-4 pb-2 border-b border-primary/10">${s.title}</h4>
+              <div class="grid grid-cols-2 gap-6">
+                ${s.items.map(([label, val]) => `
+                  <div>
+                    <p class="text-[9px] font-black uppercase tracking-widest text-muted-foreground mb-1">${label}</p>
+                    <p class="text-xs font-bold text-foreground">${val}</p>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          `).join('')}
+          
+          <div class="p-6 bg-muted/30 rounded-xl border-2 border-dashed border-border flex items-center justify-between">
+            <div>
+              <p class="text-[9px] font-black uppercase tracking-widest text-muted-foreground mb-1">Algorithmic Decision</p>
+              <span class="badge ${l.prediction_status === 'Approved' ? 'badge-approved' : 'badge-rejected'} text-sm py-1.5 px-4">${l.prediction_status}</span>
+            </div>
+            <div class="text-right">
+              <p class="text-[9px] font-black uppercase tracking-widest text-muted-foreground mb-1">Confidence Rating</p>
+              <p class="text-xl font-black text-foreground">${l.confidence}%</p>
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('loan-modal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function closeLoanModal() { document.getElementById('loan-modal').classList.add('hidden'); }
+
+    function openTransactionModal() { document.getElementById('txn-modal').classList.remove('hidden'); }
+    function closeTransactionModal() { document.getElementById('txn-modal').classList.add('hidden'); }
+
+    async function submitTransaction() {
+      const type = document.getElementById('txn-type').value;
+      const amount = parseFloat(document.getElementById('txn-amount').value);
+      const description = document.getElementById('txn-desc').value;
+
+      if (!amount || amount <= 0) { alert("Please enter a valid amount."); return; }
+      if (!description) { alert("Description is mandatory for institutional records."); return; }
+
+      try {
+        await window.api.createTransaction({
+          user_id: customerId,
+          type,
+          amount,
+          description
+        });
+        alert("Institutional ledger entry successfully executed.");
+        location.reload();
+      } catch (err) { alert(err.message); }
+    }
+
+    function setTab(tab) {
+      ['loans','txns','emis'].forEach(t => {
+        document.getElementById(`view-${t}`).classList.add('hidden');
+        document.getElementById(`tab-${t}`).classList.replace('border-primary', 'border-transparent');
+        document.getElementById(`tab-${t}`).classList.replace('text-primary', 'text-muted-foreground');
+      });
+      document.getElementById(`view-${tab}`).classList.remove('hidden');
+      document.getElementById(`tab-${tab}`).classList.replace('border-transparent', 'border-primary');
+      document.getElementById(`tab-${tab}`).classList.replace('text-muted-foreground', 'text-primary');
+    }
+
+    async function updateAccountStatus(status) {
+      if (!confirm(`Authorize account ${status}?`)) return;
+      try {
+        await window.api.updateUserStatus(customerId, status);
+        location.reload();
+      } catch (err) { alert(err.message); }
+    }
+  </script>
+</body>
+</html>

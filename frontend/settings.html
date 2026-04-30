@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lendmark — Account Settings</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+  <script src="js/theme-config.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-background text-foreground antialiased ">
+  <div class="app-layout">
+    <div id="sidebar-container" class="sidebar-wrapper"></div>
+    <main class="main-content">
+      <div class="p-6 max-w-[1000px] mx-auto space-y-6 ">
+        
+        <div class="page-header">
+          <h1>Account Settings</h1>
+          <p>Manage your profile information and security credentials.</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <!-- Profile Edit Section -->
+          <div class="lg:col-span-8 space-y-6">
+            <div class="bg-card rounded border shadow-md overflow-hidden relative group">
+              <div class="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -mr-32 -mt-32 blur-3xl"></div>
+              
+              <div id="profile-edit-section">
+                <div class="p-6 border-b bg-muted/20 flex items-center justify-between gap-4 relative z-10">
+                  <div class="flex items-center gap-4">
+                    <div class="relative group/avatar">
+                      <div id="profile-photo-container" class="w-16 h-16 rounded-full bg-primary/10 border-2 border-primary/20 flex items-center justify-center overflow-hidden shadow-inner group-hover/avatar:border-primary transition-all">
+                        <i data-lucide="user" size="32" class="text-primary/40"></i>
+                      </div>
+                      <button onclick="document.getElementById('photo-upload').click()" class="absolute bottom-0 right-0 w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform cursor-pointer">
+                        <i data-lucide="camera" size="12"></i>
+                      </button>
+                      <input type="file" id="photo-upload" class="hidden" accept="image/*" onchange="handlePhotoUpload(this)">
+                    </div>
+                    <div>
+                      <h2 class="text-lg font-semibold uppercase tracking-wide text-[13px]">Identification & Profile</h2>
+                      <p class="text-[10px] text-muted-foreground font-black uppercase ">Institutional identity verification</p>
+                    </div>
+                  </div>
+                  <div class="w-10 h-10 rounded bg-primary/10 flex items-center justify-center text-primary shadow-inner">
+                    <i data-lucide="fingerprint" size="20"></i>
+                  </div>
+                </div>
+
+              <div class="p-6 space-y-8 relative z-10">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div class="space-y-3">
+                    <label class="text-[10px] font-black uppercase tracking-wide text-muted-foreground ml-1">Legal Full Name</label>
+                    <input type="text" id="profile-name" class="w-full bg-background border-2 rounded px-6 py-4 text-sm font-bold focus:outline-none focus:border-primary transition-all" placeholder="Enter name">
+                  </div>
+                  <div class="space-y-3">
+                    <label class="text-[10px] font-black uppercase tracking-wide text-muted-foreground ml-1">Institutional Email</label>
+                    <input type="email" id="profile-email" class="w-full bg-background border-2 rounded px-6 py-4 text-sm font-bold focus:outline-none focus:border-primary transition-all" placeholder="email@lendmark.com">
+                  </div>
+                </div>
+
+                <div id="customer-only-fields" class="space-y-8">
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-3">
+                      <label class="text-[10px] font-black uppercase tracking-wide text-muted-foreground ml-1">Verified Phone Registry</label>
+                      <input type="tel" id="profile-phone" class="w-full bg-background border-2 rounded px-6 py-4 text-sm font-bold focus:outline-none focus:border-primary transition-all" placeholder="+91 00000 00000">
+                    </div>
+                    <div class="space-y-3">
+                      <label class="text-[10px] font-black uppercase tracking-wide text-muted-foreground ml-1">Date of Birth</label>
+                      <input type="date" id="profile-dob" class="w-full bg-background border-2 rounded px-6 py-4 text-sm font-bold focus:outline-none focus:border-primary transition-all cursor-pointer">
+                    </div>
+                  </div>
+
+                  <div class="space-y-3">
+                    <label class="text-[10px] font-black uppercase tracking-wide text-muted-foreground ml-1">Permanent Residential Address</label>
+                    <textarea id="profile-address" rows="3" class="w-full bg-background border-2 rounded px-6 py-4 text-sm font-bold focus:outline-none focus:border-primary transition-all resize-none shadow-sm" placeholder="Enter full address registry"></textarea>
+                  </div>
+
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-3 p-6 rounded bg-primary/5 border-2 border-primary/10 relative overflow-hidden group/mpin">
+                      <div class="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full -mr-12 -mt-12 group-hover/mpin:scale-110 transition-transform"></div>
+                      <label class="text-[10px] font-black uppercase tracking-[0.2em] text-primary ml-1 relative z-10">Institutional MPIN (4 Digits)</label>
+                      <input type="password" id="profile-mpin" maxlength="4" class="w-full bg-background border-2 border-primary/20 rounded px-6 py-4 text-xl font-black tracking-[0.8em] focus:outline-none focus:border-primary transition-all relative z-10" placeholder="••••">
+                      <p class="text-[10px] text-primary/60 mt-3 ml-1 font-bold relative z-10">Mandatory for all financial authorizations.</p>
+                    </div>
+                    <div class="space-y-3">
+                      <label class="text-[10px] font-black uppercase tracking-wide text-muted-foreground ml-1">Account Identity Number</label>
+                      <input type="text" id="profile-acc" disabled class="w-full bg-muted/50 border-2 rounded px-6 py-4 text-sm font-black font-mono text-muted-foreground cursor-not-allowed shadow-inner" placeholder="ACCXXXX">
+                    </div>
+                  </div>
+                </div>
+
+                <div class="pt-8 border-t border-dashed flex flex-col sm:flex-row items-center justify-between gap-6">
+                  <p class="text-[10px] text-muted-foreground font-black uppercase tracking-wide italic">Institutional Registry Sync: <span id="last-sync" class="text-foreground">Today</span></p>
+                  <button id="save-profile-btn" class="w-full sm:w-auto bg-primary text-primary-foreground px-12 py-4 rounded text-sm font-black shadow-md shadow-primary/30 hover:translate-y-[-3px] transition-all flex items-center justify-center gap-3 uppercase tracking-wide">
+                    <i data-lucide="shield-check" size="18"></i> Synchronize Profile
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="manager-identity-card" class="hidden p-6 space-y-4 relative z-10">
+              <div class="p-6 rounded bg-muted/10 border-2 border-dashed">
+                <p class="text-[10px] font-black text-muted-foreground uppercase tracking-wide mb-2">Authenticated Manager</p>
+                <p id="manager-display-name" class="text-2xl font-black text-foreground">--</p>
+                <p id="manager-display-email" class="text-sm font-medium text-muted-foreground mt-1">--</p>
+              </div>
+              <p class="text-[10px] text-muted-foreground font-bold italic opacity-60">Profile modifications for management accounts must be authorized via System Administration.</p>
+            </div>
+
+            <!-- Change Password -->
+            <div class="bg-card rounded border shadow-sm overflow-hidden group">
+              <div class="p-6 border-b bg-muted/20 flex items-center gap-4">
+                <div class="w-10 h-10 rounded bg-muted flex items-center justify-center text-muted-foreground">
+                  <i data-lucide="key-round" size="20"></i>
+                </div>
+                <div>
+                  <h2 class="text-lg font-semibold uppercase tracking-wide text-[13px]">Credential Management</h2>
+                  <p class="text-[10px] text-muted-foreground font-black uppercase ">Secure login architecture</p>
+                </div>
+              </div>
+              <div class="p-6">
+                <div class="flex flex-col sm:flex-row gap-4">
+                  <input type="password" id="new-password" class="flex-1 bg-background border-2 rounded px-6 py-4 text-sm font-bold focus:outline-none focus:border-primary transition-all" placeholder="Enter new institutional password">
+                  <button onclick="handlePasswordUpdate()" class="bg-muted text-foreground px-8 py-4 rounded text-[10px] font-black uppercase tracking-wide border-2 hover:bg-border transition-all">Execute Update</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Side Context -->
+          <div class="lg:col-span-4 space-y-8">
+            <div id="manager-stats-card" class="hidden bg-card p-6 rounded border shadow-sm relative overflow-hidden group">
+              <div class="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform"></div>
+              <div class="flex items-center gap-3 mb-6 relative z-10">
+                <div class="w-10 h-10 rounded bg-primary/10 flex items-center justify-center text-primary shadow-inner">
+                  <i data-lucide="shield-alert" size="20"></i>
+                </div>
+                <h3 class="font-black text-xs uppercase tracking-wide">Manager Oversight</h3>
+              </div>
+              <p class="text-[11px] text-muted-foreground leading-relaxed font-medium relative z-10">As an institutional administrator, your credentials authorize sensitive system overrides and high-volume disbursements. Ensure absolute confidentiality of your access keys.</p>
+            </div>
+
+            <div class="bg-primary/5 p-6 rounded border-2 border-primary/10 relative overflow-hidden group">
+               <div class="absolute -right-8 -bottom-8 w-40 h-40 bg-primary/10 rounded-full blur-3xl"></div>
+              <h3 class="font-black text-xs uppercase tracking-[0.2em] text-primary mb-6 relative z-10">Security Protocol</h3>
+              <ul class="space-y-5 relative z-10">
+                <li class="flex gap-4 group/item">
+                  <div class="w-6 h-6 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0 transition-transform group-hover/item:scale-110">
+                    <i data-lucide="lock" size="12"></i>
+                  </div>
+                  <span id="security-note-mpin" class="text-[11px] text-muted-foreground font-bold leading-relaxed uppercase ">Institutional MPIN must remain strictly confidential.</span>
+                </li>
+                <li class="flex gap-4 group/item">
+                  <div class="w-6 h-6 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0 transition-transform group-hover/item:scale-110">
+                    <i data-lucide="refresh-ccw" size="12"></i>
+                  </div>
+                  <span class="text-[11px] text-muted-foreground font-bold leading-relaxed uppercase ">Rotate credentials every 90 days for maximum safety.</span>
+                </li>
+              </ul>
+            </div>
+
+            <!-- Sign Out -->
+            <button onclick="handleLogout()" class="w-full bg-destructive/5 text-destructive border-2 border-destructive/10 p-6 rounded flex items-center justify-between group hover:bg-destructive hover:text-white transition-all shadow-sm">
+              <div class="text-left">
+                <h3 class="text-xs font-black uppercase tracking-wide">Terminate Session</h3>
+                <p class="text-[9px] font-black uppercase  opacity-70 mt-1">Clear all local registry cache</p>
+              </div>
+              <div class="w-10 h-10 rounded bg-destructive/10 flex items-center justify-center group-hover:bg-white/20 transition-all">
+                <i data-lucide="log-out" size="20"></i>
+              </div>
+            </button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/api-client.js"></script>
+  <script src="js/dashboard.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const user = await window.api.verifySession();
+      if (!user) { window.location.href = 'auth.html'; return; }
+      window.currentUser = user;
+
+      await initDashboard();
+      
+      const profileData = await window.api.getMyProfile().catch(() => ({}));
+      
+      // Populate fields
+      document.getElementById('profile-name').value = user.full_name || '';
+      document.getElementById('profile-email').value = user.email || '';
+      document.getElementById('profile-mpin').value = user.mpin || '';
+      document.getElementById('profile-phone').value = user.phone || '';
+      document.getElementById('profile-dob').value = user.dob || '';
+      document.getElementById('profile-address').value = user.address || '';
+      document.getElementById('profile-acc').value = profileData.account_number || 'N/A';
+      document.getElementById('last-sync').textContent = new Date().toLocaleDateString();
+
+      // Set profile photo if exists
+      if (user.profile_photo) {
+        document.getElementById('profile-photo-container').innerHTML = 
+          `<img src="/uploads/${user.profile_photo}" class="w-full h-full object-cover">`;
+      }
+
+      if (user.role === 'manager') {
+        document.getElementById('manager-stats-card').classList.remove('hidden');
+        document.getElementById('customer-only-fields').classList.add('hidden');
+        document.getElementById('security-note-mpin').classList.add('hidden');
+      }
+
+      document.getElementById('save-profile-btn').onclick = handleUpdate;
+      lucide.createIcons();
+    });
+
+    async function handlePhotoUpload(input) {
+      if (!input.files || !input.files[0]) return;
+      const file = input.files[0];
+      
+      const container = document.getElementById('profile-photo-container');
+      const originalHTML = container.innerHTML;
+      container.innerHTML = '<i data-lucide="loader-2" class="animate-spin text-primary/40" size="24"></i>';
+      lucide.createIcons();
+
+      try {
+        const result = await window.api.uploadProfilePhoto(file);
+        container.innerHTML = `<img src="/uploads/${result.filename}" class="w-full h-full object-cover">`;
+        alert("Institutional identification photo updated.");
+        // Optional: reload to update sidebar
+        // window.location.reload(); 
+      } catch (err) {
+        alert(err.message);
+        container.innerHTML = originalHTML;
+        lucide.createIcons();
+      }
+    }
+
+    async function handleUpdate() {
+      const btn = document.getElementById('save-profile-btn');
+      const name = document.getElementById('profile-name').value;
+      const email = document.getElementById('profile-email').value;
+      const mpin = document.getElementById('profile-mpin').value;
+      const phone = document.getElementById('profile-phone').value;
+      const dob = document.getElementById('profile-dob').value;
+      const address = document.getElementById('profile-address').value;
+
+      if (window.currentUser.role === 'customer' && !mpin.match(/^\d{4}$/)) {
+        alert("MPIN must be exactly 4 digits.");
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = '<i data-lucide="loader-2" class="animate-spin" size="18"></i> Processing Registry...';
+      lucide.createIcons();
+
+      try {
+        await window.api.updateProfile({ 
+          full_name: name, 
+          email, 
+          mpin,
+          phone,
+          dob,
+          address
+        });
+        alert("Institutional profile successfully synchronized.");
+        window.location.reload();
+      } catch (err) {
+        alert(err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i data-lucide="shield-check" size="18"></i> Synchronize Profile';
+        lucide.createIcons();
+      }
+    }
+
+    async function handlePasswordUpdate() {
+      const pwd = document.getElementById('new-password').value;
+      if (pwd.length < 6) { alert("Institutional password must meet complexity requirements (6+ chars)."); return; }
+      
+      try {
+        await window.api.updateProfile({ password: pwd });
+        alert("Secure credentials successfully updated.");
+        document.getElementById('new-password').value = '';
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    async function handleLogout() {
+      if (confirm("Terminate institutional session and clear cache?")) {
+        await window.api.signOut();
+        window.location.href = 'auth.html';
+      }
+    }
+  </script>
+</body>
+</html>

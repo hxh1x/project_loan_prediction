@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lendmark — Customer Records</title>
+  <meta name="description" content="Institutional record of verified account holders and their loan portfolios.">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+  <script src="js/theme-config.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-background text-foreground antialiased">
+  <div class="app-layout">
+    <div id="sidebar-container" class="sidebar-wrapper"></div>
+    <main class="main-content">
+      <div class="p-6 max-w-[1100px] mx-auto">
+
+        <!-- Page Header -->
+        <div class="page-header">
+          <h1>Customer Records</h1>
+          <p>Institutional registry of verified account holders and their loan portfolio history.</p>
+        </div>
+
+        <!-- Summary Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div class="stat-card">
+            <p class="stat-label">Total Customers</p>
+            <p id="total-customers" class="stat-value">0</p>
+          </div>
+          <div class="stat-card">
+            <p class="stat-label">Active Loan Holders</p>
+            <p id="active-loans-count" class="stat-value" style="color:hsl(var(--primary))">0</p>
+          </div>
+          <div class="stat-card">
+            <p class="stat-label">Total Approved Volume</p>
+            <p id="total-loan-volume" class="stat-value">₹0</p>
+          </div>
+        </div>
+
+        <!-- Search -->
+        <div class="panel mb-4">
+          <div class="p-4 flex items-center gap-3">
+            <i data-lucide="search" size="15" class="text-muted-foreground shrink-0"></i>
+            <input id="customer-search" oninput="renderTable()"
+              placeholder="Search by name or account number..."
+              class="formal-input border-0 p-0 flex-1 text-sm"
+              style="border:none;box-shadow:none;background:transparent;">
+          </div>
+        </div>
+
+        <!-- Table -->
+        <div class="panel">
+          <div class="panel-header"><h3>Customer Directory</h3></div>
+          <div class="overflow-x-auto">
+            <table class="w-full">
+              <thead>
+                <tr>
+                  <th>Account Holder</th>
+                  <th>Account No.</th>
+                  <th>Contact</th>
+                  <th>Account Status</th>
+                  <th>Approved Loans</th>
+                  <th>Disbursed Volume</th>
+                </tr>
+              </thead>
+              <tbody id="customer-table-body">
+                <tr><td colspan="6" class="text-center py-16 text-sm text-muted-foreground italic">Loading customer records...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/api-client.js"></script>
+  <script src="js/dashboard.js"></script>
+  <script src="js/loan-predictor.js"></script>
+  <script>
+    let customers = [];
+    let loanSummaries = {};
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const user = await window.api.verifySession();
+      if (!user) { window.location.href = 'auth.html'; return; }
+      if (user.role !== 'manager') { window.location.href = 'index.html'; return; }
+      window.currentUser = user;
+
+      await initDashboard();
+      await fetchData();
+    });
+
+    async function fetchData() {
+      const [profiles, loans] = await Promise.all([
+        window.api.getProfiles().catch(() => []),
+        window.api.getApplications().catch(() => []),
+      ]);
+
+      customers = profiles;
+      loanSummaries = {};
+      loans.forEach(loan => {
+        if (!loanSummaries[loan.user_id]) loanSummaries[loan.user_id] = { total: 0, approved: 0, amount: 0 };
+        loanSummaries[loan.user_id].total++;
+        if (loan.status === 'approved') {
+          loanSummaries[loan.user_id].approved++;
+          loanSummaries[loan.user_id].amount += loan.loan_amount;
+        }
+      });
+
+      document.getElementById('total-customers').textContent = customers.length;
+      document.getElementById('active-loans-count').textContent = Object.values(loanSummaries).filter(s => s.approved > 0).length;
+      document.getElementById('total-loan-volume').textContent = window.loanPredictor.formatCurrency(
+        Object.values(loanSummaries).reduce((s, l) => s + l.amount, 0)
+      );
+      renderTable();
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('customer-table-body');
+      const search = document.getElementById('customer-search').value.toLowerCase();
+      const filtered = customers.filter(c =>
+        (c.full_name || '').toLowerCase().includes(search) ||
+        (c.account_number || '').toLowerCase().includes(search)
+      );
+      if (!filtered.length) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center py-24 text-sm text-muted-foreground font-medium italic">No account holders found matching criteria.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = filtered.map(c => {
+        const s = loanSummaries[c.user_id] || { total: 0, approved: 0, amount: 0 };
+        const status = c.account_status || 'pending';
+        let statusBadge = '';
+        if (status === 'approved') {
+          statusBadge = `<span class="badge badge-approved">Active</span>`;
+        } else if (status === 'rejected') {
+          statusBadge = `<span class="badge badge-rejected">Declined</span>`;
+        } else {
+          statusBadge = `<div class="space-y-1.5">
+            <span class="badge badge-pending">Pending Verification</span>
+            <div class="flex gap-1.5 mt-1.5">
+              <button onclick="updateStatus('${c.user_id}', 'approved')" class="btn-primary text-[10px] py-1 px-2.5 gap-1"><i data-lucide="check" size="11"></i> Approve</button>
+              <button onclick="updateStatus('${c.user_id}', 'rejected')" class="btn-secondary text-[10px] py-1 px-2.5 gap-1 border-destructive/30 text-destructive hover:bg-destructive hover:text-white"><i data-lucide="x" size="11"></i> Decline</button>
+            </div>
+          </div>`;
+        }
+        return `<tr>
+          <td>
+            <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded bg-primary/10 flex items-center justify-center text-xs font-semibold text-primary shrink-0 overflow-hidden border border-primary/20 shadow-inner">
+              ${c.profile_photo 
+                ? `<img src="/uploads/${c.profile_photo}" class="w-full h-full object-cover">`
+                : (c.full_name || 'U').charAt(0).toUpperCase()}
+            </div>
+              <div>
+                <p class="text-xs font-semibold text-foreground hover:text-primary cursor-pointer transition-colors" 
+                   onclick="window.location.href='customer-details.html?id=${c.user_id}'">${c.full_name || '—'}</p>
+                <p class="text-[10px] text-muted-foreground mt-0.5">DOB: ${c.dob || 'Not provided'}</p>
+              </div>
+            </div>
+          </td>
+          <td class="text-xs font-medium text-foreground font-mono uppercase">${c.account_number || 'Unassigned'}</td>
+          <td>
+            <p class="text-xs text-foreground font-medium">${c.email || '—'}</p>
+            <p class="text-[10px] text-muted-foreground mt-0.5 font-bold">${c.phone || '—'}</p>
+          </td>
+          <td>${statusBadge}</td>
+          <td class="text-xs font-semibold text-foreground">${s.approved} <span class="text-muted-foreground font-normal">/ ${s.total}</span></td>
+          <td class="text-xs font-semibold" style="color:hsl(var(--primary))">
+            <div class="flex items-center justify-between gap-4">
+              <span>${window.loanPredictor.formatCurrency(s.amount)}</span>
+              <button onclick="window.location.href='customer-details.html?id=${c.user_id}'" 
+                      class="btn-secondary text-[10px] py-1.5 px-3 gap-1.5 hover:bg-primary/5 hover:text-primary border-primary/10">
+                <i data-lucide="external-link" size="11"></i> Details
+              </button>
+            </div>
+          </td>
+        </tr>`;
+      }).join('');
+      lucide.createIcons();
+    }
+
+    async function updateStatus(userId, status) {
+      const label = status === 'approved' ? 'Approve' : 'Decline';
+      if (!confirm(`Confirm: ${label} this account?`)) return;
+      try {
+        await window.api.updateUserStatus(userId, status);
+        await fetchData();
+      } catch (err) { alert(err.message || 'Action failed'); }
+    }
+  </script>
+</body>
+</html>

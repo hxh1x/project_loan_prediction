@@ -1,4 +1,4 @@
-// Inject Tailwind v4 theme configuration bypassing CORS for local file://
+// Inject Tailwind v4 theme configuration
 const tailwindTheme = `
 @theme {
   --color-border: hsl(var(--border));
@@ -26,8 +26,8 @@ const tailwindTheme = `
   --color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
   --color-sidebar-border: hsl(var(--sidebar-border));
   --radius-lg: var(--radius);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 1px);
+  --radius-sm: calc(var(--radius) - 2px);
 }
 `;
 const styleEl = document.createElement('style');
@@ -35,15 +35,18 @@ styleEl.type = 'text/tailwindcss';
 styleEl.innerHTML = tailwindTheme;
 document.head.appendChild(styleEl);
 
-// Dark mode logic
+// Dark mode
 function toggleDarkMode() {
   document.documentElement.classList.toggle('dark');
   const isDark = document.documentElement.classList.contains('dark');
   localStorage.setItem('theme', isDark ? 'dark' : 'light');
 }
 
-// Check saved theme
-if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+// Restore saved theme on load
+if (
+  localStorage.theme === 'dark' ||
+  (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)
+) {
   document.documentElement.classList.add('dark');
 } else {
   document.documentElement.classList.remove('dark');

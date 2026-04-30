@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lendmark — Repayment Schedule</title>
+  <meta name="description" content="Lendmark Institutional Banking — Manage your loan repayment schedules and automated settlement settings.">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+  <script src="js/theme-config.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-background text-foreground antialiased">
+  <div class="app-layout">
+    <div id="sidebar-container" class="sidebar-wrapper"></div>
+    <main class="main-content">
+      <div class="p-6 max-w-[1100px] mx-auto">
+        
+        <!-- Page Header -->
+        <div class="page-header">
+          <div class="flex items-center justify-between gap-4">
+            <div>
+              <h1>Repayment Schedule</h1>
+              <p>Manage financial obligations and automated settlement settings for active loans.</p>
+            </div>
+            <div class="flex items-center gap-3">
+              <button id="notif-btn" onclick="toggleNotifs()" class="btn-secondary relative py-2">
+                <i data-lucide="bell" size="14"></i> Alerts
+                <span id="notif-badge" class="hidden absolute -top-1 -right-1 w-4 h-4 bg-primary text-primary-foreground text-[9px] font-bold rounded-full flex items-center justify-center border border-background">0</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Metrics Overview -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <div class="stat-card">
+            <p class="stat-label">Next Settlement</p>
+            <div class="flex items-baseline gap-2">
+              <p id="next-emi-amt" class="stat-value">₹0</p>
+            </div>
+            <p id="next-emi-date" class="text-[10px] text-muted-foreground font-medium mt-1 uppercase tracking-wider">No pending obligations</p>
+          </div>
+
+          <div class="stat-card">
+            <p class="stat-label">Outstanding Balance</p>
+            <p id="outstanding-val" class="stat-value">₹0</p>
+            <p class="text-[10px] text-muted-foreground font-medium mt-1 uppercase tracking-wider">Total pending principal</p>
+          </div>
+
+          <div class="stat-card">
+            <p class="stat-label">Action Required</p>
+            <p id="action-val" class="stat-value">0</p>
+            <p class="text-[10px] text-muted-foreground font-medium mt-1 uppercase tracking-wider">Overdue installments</p>
+          </div>
+
+          <div class="stat-card">
+            <div class="flex items-center justify-between">
+              <p class="stat-label">Health Index</p>
+              <span id="health-grade" class="badge badge-approved">A+</span>
+            </div>
+            <p id="health-score" class="stat-value">100</p>
+            <p class="text-[10px] text-muted-foreground font-medium mt-1 uppercase tracking-wider">Repayment performance</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          <!-- Sidebar Controls -->
+          <div class="lg:col-span-4 space-y-6">
+            <div class="panel">
+              <div class="panel-header">
+                <h3>Automated Settlement</h3>
+                <i data-lucide="refresh-cw" size="14" class="text-primary"></i>
+              </div>
+              <div id="auto-debit-list" class="p-4 space-y-3">
+                <p class="text-xs text-muted-foreground text-center py-4 italic">Syncing settings...</p>
+              </div>
+              <div class="p-4 bg-muted/20 border-t border-border/40">
+                <p class="text-[10px] text-muted-foreground leading-relaxed italic">
+                  Note: Automated settlement occurs at 09:00 IST on the scheduled date. Ensure sufficient account balance.
+                </p>
+              </div>
+            </div>
+
+            <div id="reschedule-card" class="panel hidden">
+              <div class="panel-header">
+                <h3>Cycle Modification</h3>
+                <i data-lucide="settings-2" size="14"></i>
+              </div>
+              <div class="p-5 space-y-4">
+                <div class="space-y-1.5">
+                  <label class="text-[10px] font-bold uppercase tracking-wider text-muted-foreground ml-1">Select Loan Profile</label>
+                  <select id="reschedule-loan" class="formal-input py-2.5"></select>
+                </div>
+                <div class="space-y-1.5">
+                  <label class="text-[10px] font-bold uppercase tracking-wider text-muted-foreground ml-1">Preferred Billing Day</label>
+                  <select id="reschedule-day" class="formal-input py-2.5">
+                    <option value="1">1st of month</option>
+                    <option value="5">5th of month</option>
+                    <option value="10">10th of month</option>
+                    <option value="15">15th of month</option>
+                    <option value="25">25th of month</option>
+                  </select>
+                </div>
+                <button onclick="submitReschedule()" class="btn-primary w-full justify-center text-xs py-2.5">
+                  Submit Request
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Repayment List -->
+          <div class="lg:col-span-8 space-y-4">
+            <div class="flex items-center justify-between gap-4 px-1">
+              <div class="flex items-center gap-1.5">
+                <button onclick="setFilter('all')" data-filter="all" class="filter-btn btn-secondary px-5 py-1.5 text-[10px] uppercase font-bold tracking-wider active">All</button>
+                <button onclick="setFilter('upcoming')" data-filter="upcoming" class="filter-btn btn-secondary px-5 py-1.5 text-[10px] uppercase font-bold tracking-wider">Upcoming</button>
+                <button onclick="setFilter('action')" data-filter="action" class="filter-btn btn-secondary px-5 py-1.5 text-[10px] uppercase font-bold tracking-wider">Overdue</button>
+                <button onclick="setFilter('paid')" data-filter="paid" class="filter-btn btn-secondary px-5 py-1.5 text-[10px] uppercase font-bold tracking-wider">Settled</button>
+              </div>
+              <p id="emi-count" class="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">0 Entries</p>
+            </div>
+
+            <div class="panel">
+              <div class="overflow-x-auto">
+                <table class="w-full">
+                  <thead>
+                    <tr>
+                      <th class="w-16">No.</th>
+                      <th>Application</th>
+                      <th>Settlement Date</th>
+                      <th>Amount</th>
+                      <th>Status</th>
+                      <th class="text-center">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="emi-table-body">
+                    <tr><td colspan="6" class="text-center py-20 text-xs text-muted-foreground italic animate-pulse">Synchronizing ledger...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Repayment Modal -->
+  <div id="pay-modal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-[100] p-6">
+    <div class="bg-card rounded border shadow-xl w-full max-w-md overflow-hidden transform transition-all">
+      <div class="panel-header">
+        <h3>Transaction Authorization</h3>
+        <button onclick="closePayModal()" class="text-muted-foreground hover:text-foreground">
+          <i data-lucide="x" size="18"></i>
+        </button>
+      </div>
+      <div class="p-6 space-y-6">
+        <div class="p-5 rounded bg-muted/30 border text-center">
+          <p class="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-2">Total Due Amount</p>
+          <p id="pay-amount-due" class="text-3xl font-bold text-primary">₹0</p>
+          <p id="pay-details" class="text-[10px] text-muted-foreground mt-2 font-medium uppercase"></p>
+        </div>
+        
+        <div class="space-y-5">
+          <div class="space-y-1.5">
+            <label class="text-[10px] font-bold uppercase tracking-wider text-muted-foreground ml-1">Payment Amount (Adjustable)</label>
+            <div class="relative">
+              <span class="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground font-semibold text-xs">₹</span>
+              <input type="number" id="pay-amount-input" class="formal-input pl-8 py-3 text-base font-semibold" placeholder="0.00">
+            </div>
+            <p class="text-[9px] text-muted-foreground italic">Excess payments will automatically be applied to future installments.</p>
+          </div>
+
+          <div id="mpin-container" class="space-y-1.5 hidden">
+            <label class="text-[10px] font-bold uppercase tracking-wider text-primary ml-1">4-Digit Security MPIN</label>
+            <input type="password" id="pay-mpin-input" maxlength="4" class="formal-input py-3 text-center text-xl tracking-[0.8em]" placeholder="••••">
+          </div>
+        </div>
+
+        <button onclick="confirmPay()" class="btn-primary w-full justify-center py-3.5 mt-2">
+          <i data-lucide="shield-check" size="16"></i> Authorize Settlement
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notification Panel (Same as index.html) -->
+  <div id="notif-panel" class="hidden absolute top-16 right-6 w-80 bg-card rounded border shadow-lg z-[101] overflow-hidden">
+    <div class="panel-header">
+      <h3>Alert Center</h3>
+      <button onclick="markAllRead()" class="text-[10px] text-primary font-bold uppercase">Clear</button>
+    </div>
+    <div id="notif-list" class="max-h-80 overflow-y-auto divide-y divide-border/40">
+      <p class="p-6 text-center text-xs text-muted-foreground italic">No alerts.</p>
+    </div>
+  </div>
+
+  <script src="js/api-client.js"></script>
+  <script src="js/dashboard.js"></script>
+  <script src="js/loan-predictor.js"></script>
+  <script>
+    let allEmis = [];
+    let allLoans = [];
+    let currentFilter = 'all';
+    let payingEmiId = null;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const user = await window.api.verifySession();
+      if (!user) { window.location.href = 'auth.html'; return; }
+      window.currentUser = user;
+
+      await initDashboard();
+      await fetchData();
+      
+      setInterval(updateNotifBadge, 30000);
+      updateNotifBadge();
+    });
+
+    async function fetchData() {
+      try {
+        const [emis, loans, summary, health] = await Promise.all([
+          window.api.getEmiSchedules().catch(() => []),
+          window.api.getApplications().catch(() => []),
+          window.api.getEmiSummary().catch(() => ({action_needed:0, outstanding:0, next_emi: null})),
+          window.api.getEmiHealthScore().catch(() => ({score:100, grade:'A+'}))
+        ]);
+
+        allEmis = emis;
+        allLoans = loans.filter(l => l.status === 'approved');
+
+        updateMetrics(summary, health);
+        renderAutoDebit();
+        renderReschedule();
+        renderTable();
+      } catch (err) { console.error(err); }
+    }
+
+    function updateMetrics(summary, health) {
+      document.getElementById('next-emi-amt').textContent = summary.next_emi 
+        ? window.loanPredictor.formatCurrency(summary.next_emi.amount) : '₹0';
+      document.getElementById('next-emi-date').textContent = summary.next_emi 
+        ? `Due on ${new Date(summary.next_emi.due_date).toLocaleDateString(undefined, {month:'short', day:'numeric'})}`
+        : 'No pending obligations';
+      
+      document.getElementById('outstanding-val').textContent = window.loanPredictor.formatCurrency(summary.outstanding);
+      document.getElementById('action-val').textContent = summary.action_needed;
+      
+      document.getElementById('health-score').textContent = health.score;
+      document.getElementById('health-grade').textContent = health.grade;
+      
+      const valEl = document.getElementById('action-val');
+      if (summary.action_needed > 0) valEl.classList.add('text-destructive');
+      else valEl.classList.remove('text-destructive');
+    }
+
+    async function renderAutoDebit() {
+      const container = document.getElementById('auto-debit-list');
+      if (allLoans.length === 0) {
+        container.innerHTML = '<p class="text-xs text-muted-foreground text-center py-4 italic">No active loan profiles.</p>';
+        return;
+      }
+      container.innerHTML = '';
+      for (const loan of allLoans) {
+        const settings = await window.api.getEmiSettings(loan.id).catch(() => ({auto_debit_enabled: 0}));
+        const div = document.createElement('div');
+        div.className = 'flex items-center justify-between p-3 rounded bg-muted/10 border border-border/50';
+        div.innerHTML = `
+          <div>
+            <p class="text-[11px] font-semibold text-foreground">${loan.applicant_name}</p>
+            <p class="text-[9px] text-muted-foreground uppercase font-bold tracking-tight">${window.loanPredictor.formatCurrency(loan.monthly_emi)}/mo</p>
+          </div>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" ${settings.auto_debit_enabled ? 'checked' : ''} onchange="toggleAutoDebit('${loan.id}', this.checked)" class="sr-only peer">
+            <div class="w-8 h-4.5 bg-muted rounded-full peer peer-checked:bg-primary transition-all after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3.5 after:w-3.5 after:transition-all peer-checked:after:translate-x-3.5"></div>
+          </label>
+        `;
+        container.appendChild(div);
+      }
+    }
+
+    async function toggleAutoDebit(loanId, enabled) {
+      try { await window.api.updateEmiSettings(loanId, { auto_debit_enabled: enabled }); } 
+      catch (err) { alert("Action failed"); }
+    }
+
+    function renderReschedule() {
+      const card = document.getElementById('reschedule-card');
+      const select = document.getElementById('reschedule-loan');
+      if (allLoans.length === 0) { card.classList.add('hidden'); return; }
+      card.classList.remove('hidden');
+      select.innerHTML = '<option value="">Select loan...</option>' + 
+        allLoans.map(l => `<option value="${l.id}">${l.applicant_name}</option>`).join('');
+    }
+
+    async function submitReschedule() {
+      const loanId = document.getElementById('reschedule-loan').value;
+      const day = document.getElementById('reschedule-day').value;
+      if (!loanId) return;
+      try { await window.api.requestReschedule(loanId, parseInt(day)); alert("Adjustment request submitted."); } 
+      catch (err) { alert(err.message); }
+    }
+
+    function setFilter(filter) {
+      currentFilter = filter;
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.remove('bg-primary', 'text-primary-foreground', 'border-primary');
+        if (btn.getAttribute('data-filter') === filter) {
+          btn.classList.add('bg-primary', 'text-primary-foreground', 'border-primary');
+          btn.classList.remove('btn-secondary');
+        } else {
+          btn.classList.add('btn-secondary');
+        }
+      });
+      renderTable();
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('emi-table-body');
+      const filtered = allEmis.filter(e => {
+        if (currentFilter === 'all') return true;
+        if (currentFilter === 'upcoming') return e.status === 'upcoming' || e.status === 'due_today';
+        if (currentFilter === 'action') return ['failed', 'overdue'].includes(e.status);
+        if (currentFilter === 'paid') return e.status === 'paid';
+        return true;
+      });
+
+      document.getElementById('emi-count').textContent = `${filtered.length} Entries`;
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center py-20 text-xs text-muted-foreground italic">No matching records found.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(e => {
+        let badgeClass = 'badge-pending';
+        if (e.status === 'paid') badgeClass = 'badge-approved';
+        if (['failed', 'overdue'].includes(e.status)) badgeClass = 'badge-rejected';
+        
+        return `
+          <tr>
+            <td class="text-muted-foreground/50 font-bold">#${e.emi_number}</td>
+            <td>
+              <p class="font-semibold text-xs">${e.applicant_name || 'Loan Asset'}</p>
+              <p class="text-[9px] text-muted-foreground uppercase font-bold opacity-60">REF: ${e.loan_id.split('-')[0]}</p>
+            </td>
+            <td>
+              <p class="text-xs font-medium">${new Date(e.due_date).toLocaleDateString()}</p>
+              <p class="text-[9px] text-muted-foreground uppercase font-bold opacity-50">${getRelativeDate(e.due_date)}</p>
+            </td>
+            <td class="font-bold text-xs">${window.loanPredictor.formatCurrency(e.amount)}</td>
+            <td><span class="badge ${badgeClass}">${e.status.replace('_', ' ')}</span></td>
+            <td class="text-center">
+              ${e.status === 'paid' ? '<i data-lucide="check" size="14" class="text-primary mx-auto"></i>' : `
+                <button onclick="openPayModal('${e.id}')" class="btn-primary text-[10px] py-1.5 px-4 h-auto">Pay</button>
+              `}
+            </td>
+          </tr>`;
+      }).join('');
+      lucide.createIcons();
+    }
+
+    function getRelativeDate(dateStr) {
+      const target = new Date(dateStr); const today = new Date(); today.setHours(0,0,0,0);
+      const diff = Math.ceil((target - today) / (86400000));
+      if (diff === 0) return "Today"; if (diff === 1) return "Tomorrow";
+      if (diff < 0) return `${Math.abs(diff)}d overdue`; return `In ${diff}d`;
+    }
+
+    function openPayModal(id) {
+      payingEmiId = id;
+      const emi = allEmis.find(e => e.id === id);
+      const total = parseFloat(emi.amount) + parseFloat(emi.late_fee || 0) - parseFloat(emi.paid_amount || 0);
+      document.getElementById('pay-amount-due').textContent = window.loanPredictor.formatCurrency(total);
+      document.getElementById('pay-details').textContent = emi.late_fee > 0 ? `Late fee applied` : `Direct settlement`;
+      document.getElementById('pay-amount-input').value = total.toFixed(2);
+      if (window.currentUser.role === 'customer') document.getElementById('mpin-container').classList.remove('hidden');
+      else document.getElementById('mpin-container').classList.add('hidden');
+      document.getElementById('pay-mpin-input').value = '';
+      document.getElementById('pay-modal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function closePayModal() { document.getElementById('pay-modal').classList.add('hidden'); }
+
+    async function confirmPay() {
+      const amount = parseFloat(document.getElementById('pay-amount-input').value);
+      const mpin = document.getElementById('pay-mpin-input').value;
+      if (isNaN(amount) || amount <= 0) return;
+      try {
+        await window.api.payEmi(payingEmiId, { amount, mpin });
+        closePayModal(); await fetchData(); alert("Authorized.");
+      } catch (err) { alert(err.message); }
+    }
+
+    async function updateNotifBadge() {
+      try {
+        const { count } = await window.api.getUnreadCount();
+        const badge = document.getElementById('notif-badge');
+        if (count > 0) { badge.textContent = count; badge.classList.remove('hidden'); }
+        else badge.classList.add('hidden');
+      } catch (e) {}
+    }
+
+    async function toggleNotifs() {
+      const panel = document.getElementById('notif-panel');
+      if (panel.classList.contains('hidden')) { panel.classList.remove('hidden'); await refreshNotifList(); }
+      else panel.classList.add('hidden');
+    }
+
+    async function refreshNotifList() {
+      const list = document.getElementById('notif-list');
+      try {
+        const notifs = await window.api.getNotifications();
+        if (notifs.length === 0) list.innerHTML = '<p class="p-6 text-center text-xs italic">No alerts.</p>';
+        else {
+          list.innerHTML = notifs.map(n => `
+            <div class="p-4 ${n.is_read ? 'opacity-50' : 'bg-primary/5'}">
+              <p class="text-xs font-bold">${n.title}</p>
+              <p class="text-[10px] text-muted-foreground mt-1">${n.message}</p>
+            </div>`).join('');
+        }
+      } catch (e) {}
+    }
+
+    async function markAllRead() { await window.api.markAllRead(); updateNotifBadge(); await refreshNotifList(); }
+  </script>
+</body>
+</html>

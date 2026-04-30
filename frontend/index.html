@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lendmark — Command Center</title>
+  <meta name="description" content="Lendmark Institutional Banking — Interactive financial oversight and portfolio management.">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+  <script src="js/theme-config.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    .widget { background: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: var(--radius); overflow: hidden; transition: all 0.3s ease; }
+    .widget:hover { border-color: hsl(var(--primary) / 0.3); box-shadow: 0 12px 30px -10px hsl(var(--primary) / 0.08); }
+    .hero-banner { background: linear-gradient(135deg, hsl(var(--sidebar-background)) 0%, #1a2a44 100%); color: white; border-radius: var(--radius); position: relative; }
+    .roadmap-item { min-width: 140px; padding: 1rem; border-radius: var(--radius); border: 1px solid hsl(var(--border)); background: hsl(var(--muted) / 0.3); }
+    .roadmap-item.active { border-color: hsl(var(--primary)); background: hsl(var(--primary) / 0.05); }
+    .pulse-ring { position: relative; width: 120px; height: 120px; }
+    .pulse-ring svg { transform: rotate(-90deg); }
+    .pulse-ring circle { fill: none; stroke-width: 4; stroke-linecap: round; transition: stroke-dasharray 1s ease; }
+    .dot-bg { background-image: radial-gradient(hsl(var(--muted-foreground) / 0.15) 1px, transparent 1px); background-size: 24px 24px; }
+  </style>
+</head>
+<body class="bg-background text-foreground antialiased dot-bg">
+  <div class="app-layout">
+    <div id="sidebar-container" class="sidebar-wrapper"></div>
+    <main class="main-content">
+      <div class="p-8 max-w-[1200px] mx-auto space-y-8">
+
+        <!-- Command Header -->
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-border/40">
+          <div>
+            <div class="flex items-center gap-3 mb-2">
+              <span id="live-status" class="flex items-center gap-1.5 px-2 py-0.5 bg-primary/10 text-primary text-[9px] font-black uppercase tracking-widest rounded-sm border border-primary/20">
+                <span class="w-1.5 h-1.5 bg-primary rounded-full animate-pulse"></span>
+                Registry Active
+              </span>
+            </div>
+            <h1 id="welcome-msg" class="font-serif text-4xl font-bold tracking-tight">Command Center</h1>
+            <p id="welcome-sub" class="text-sm text-muted-foreground mt-1 max-w-lg">Synchronizing institutional capital and portfolio telemetry...</p>
+          </div>
+          <div id="header-actions" class="flex items-center gap-3"></div>
+        </div>
+
+        <div id="dashboard-hub" class="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+          <!-- Hub Loading -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="h-64 bg-card border rounded animate-pulse"></div>
+            <div class="h-64 bg-card border rounded animate-pulse"></div>
+            <div class="h-64 bg-card border rounded animate-pulse"></div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <script src="js/api-client.js"></script>
+  <script src="js/dashboard.js"></script>
+  <script src="js/loan-predictor.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const user = await window.api.verifySession();
+      if (!user) { window.location.href = 'auth.html'; return; }
+      window.currentUser = user;
+
+      await initDashboard();
+
+      if (user.role === 'manager') renderManagerHub();
+      else renderCustomerHub();
+    });
+
+    /* ─── CUSTOMER COMMAND HUB ─── */
+    async function renderCustomerHub() {
+      const hub = document.getElementById('dashboard-hub');
+      const actions = document.getElementById('header-actions');
+
+      actions.innerHTML = `
+        <button onclick="window.location.href='loan-center.html'" class="btn-primary py-3 px-8 text-xs font-black uppercase tracking-widest">
+          Initiate Loan Audit
+        </button>
+      `;
+
+      try {
+        const [stats, txns, emis, health] = await Promise.all([
+          window.api.getCustomerStats(),
+          window.api.getTransactions(),
+          window.api.getEmiSchedules(),
+          window.api.getEmiHealthScore()
+        ]);
+
+        const nextEmi = emis.filter(e => e.status !== 'paid').sort((a,b) => new Date(a.due_date) - new Date(b.due_date))[0];
+        const repayProgress = stats.total_loan_amount > 0 ? (stats.total_repaid / stats.total_loan_amount) * 100 : 0;
+
+        hub.innerHTML = `
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <!-- Left Panel: Financial Integrity -->
+            <div class="lg:col-span-8 space-y-8">
+              
+              <!-- 1. Portfolio Hero -->
+              <div class="hero-banner p-10 flex flex-col md:flex-row items-center justify-between gap-10 shadow-2xl">
+                <div class="space-y-6">
+                  <div>
+                    <p class="text-[10px] font-black uppercase tracking-[0.4em] text-primary-foreground/50 mb-3">Institutional Standing</p>
+                    <h2 class="text-4xl font-serif font-bold leading-tight">Capital Portfolio <br>Overview</h2>
+                  </div>
+                  <div class="flex items-center gap-8">
+                    <div>
+                      <p class="text-[10px] font-black uppercase opacity-40 mb-1">Total Principal</p>
+                      <p class="text-2xl font-number font-bold">${window.loanPredictor.formatCurrency(stats.total_loan_amount)}</p>
+                    </div>
+                    <div class="w-px h-10 bg-white/10"></div>
+                    <div>
+                      <p class="text-[10px] font-black uppercase opacity-40 mb-1">Remaining Liability</p>
+                      <p class="text-2xl font-number font-bold">${window.loanPredictor.formatCurrency(stats.total_loan_amount - stats.total_repaid)}</p>
+                    </div>
+                  </div>
+                </div>
+                <div class="pulse-ring">
+                  <svg viewBox="0 0 36 36" class="w-full h-full">
+                    <circle cx="18" cy="18" r="16" class="stroke-white/10" />
+                    <circle cx="18" cy="18" r="16" class="stroke-white" stroke-dasharray="${repayProgress}, 100" />
+                  </svg>
+                  <div class="absolute inset-0 flex flex-col items-center justify-center">
+                    <span class="text-2xl font-number font-bold">${Math.round(repayProgress)}%</span>
+                    <span class="text-[8px] font-black uppercase opacity-50">Repaid</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 2. Interactive Repayment Roadmap -->
+              <div class="widget">
+                <div class="panel-header border-b px-6 py-4 flex justify-between items-center">
+                  <h3 class="text-xs font-black uppercase tracking-widest">Repayment Roadmap</h3>
+                  <button onclick="window.location.href='emi-reminders.html'" class="text-[10px] font-bold text-primary uppercase">Manage Schedule</button>
+                </div>
+                <div class="p-6">
+                  <div class="flex gap-4 overflow-x-auto pb-4 no-scrollbar">
+                    ${emis.slice(0, 10).map(e => `
+                      <div class="roadmap-item shrink-0 ${e.status === 'upcoming' ? 'active ring-1 ring-primary/20' : ''}">
+                        <p class="text-[9px] font-black uppercase text-muted-foreground mb-2">EMI #${e.emi_number}</p>
+                        <p class="text-sm font-number font-bold text-foreground mb-1">${window.loanPredictor.formatCurrency(e.amount)}</p>
+                        <div class="flex items-center gap-2">
+                          <span class="w-1.5 h-1.5 rounded-full ${e.status === 'paid' ? 'bg-primary' : (e.status === 'upcoming' ? 'bg-amber-500' : 'bg-muted')}"></span>
+                          <span class="text-[9px] font-bold uppercase opacity-60">${e.status}</span>
+                        </div>
+                        <p class="text-[9px] text-muted-foreground mt-2 font-medium">${new Date(e.due_date).toLocaleDateString('en-IN', {month:'short', day:'numeric'})}</p>
+                      </div>
+                    `).join('')}
+                    <div class="roadmap-item shrink-0 border-dashed flex flex-col items-center justify-center text-center opacity-50">
+                      <i data-lucide="more-horizontal" size="16"></i>
+                      <p class="text-[9px] font-bold mt-2">VIEW FULL MAP</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 3. Recent Activity Feed -->
+              <div class="widget">
+                <div class="panel-header border-b px-6 py-4">
+                  <h3 class="text-xs font-black uppercase tracking-widest">Transaction Intelligence</h3>
+                </div>
+                <div class="divide-y divide-border/30">
+                  ${txns.slice(0, 5).map(t => `
+                    <div class="px-6 py-4 flex items-center justify-between hover:bg-muted/5 transition-colors">
+                      <div class="flex items-center gap-4">
+                        <div class="w-9 h-9 rounded bg-muted/30 border border-border/50 flex items-center justify-center text-muted-foreground">
+                          <i data-lucide="${t.type === 'credit' ? 'arrow-down-left' : 'arrow-up-right'}" size="16"></i>
+                        </div>
+                        <div>
+                          <p class="text-xs font-bold text-foreground">${t.description}</p>
+                          <p class="text-[10px] text-muted-foreground font-medium uppercase mt-0.5 tracking-tight">${new Date(t.created_at).toLocaleDateString()}</p>
+                        </div>
+                      </div>
+                      <div class="text-right">
+                        <p class="text-sm font-number font-bold ${t.type === 'credit' ? 'text-primary' : 'text-foreground'}">
+                          ${t.type === 'credit' ? '+' : '−'}${window.loanPredictor.formatCurrency(t.amount)}
+                        </p>
+                        <p class="text-[9px] text-muted-foreground/50 font-mono mt-0.5">BALANCE: ${window.loanPredictor.formatCurrency(t.balance)}</p>
+                      </div>
+                    </div>
+                  `).join('') || '<p class="p-10 text-center text-xs italic text-muted-foreground">No recent movements.</p>'}
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Right Panel: Smart Widgets -->
+            <div class="lg:col-span-4 space-y-8">
+              
+              <!-- 1. Liquidity Pulse -->
+              <div class="widget p-6 bg-primary/5 border-primary/20">
+                <h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-primary mb-6">Financial Pulse</h3>
+                <div class="space-y-6">
+                  <div class="flex justify-between items-end">
+                    <div>
+                      <p class="text-[9px] font-black uppercase text-muted-foreground mb-1">Available Capital</p>
+                      <p class="text-2xl font-number font-bold">${window.loanPredictor.formatCurrency(stats.balance)}</p>
+                    </div>
+                    <div class="text-right">
+                      <p class="text-[9px] font-black uppercase text-muted-foreground mb-1">Next EMI</p>
+                      <p class="text-lg font-number font-bold text-foreground">${nextEmi ? window.loanPredictor.formatCurrency(nextEmi.amount) : '₹0'}</p>
+                    </div>
+                  </div>
+                  <div class="h-2 w-full bg-muted rounded-full overflow-hidden flex shadow-inner">
+                    <div class="h-full bg-primary" style="width: ${stats.balance > 0 ? Math.min((stats.balance / (nextEmi ? nextEmi.amount : 1)) * 50, 100) : 0}%"></div>
+                  </div>
+                  <p class="text-[10px] text-muted-foreground leading-relaxed italic">
+                    ${stats.balance >= (nextEmi ? nextEmi.amount : 0) 
+                      ? 'Liquidity sufficient for upcoming settlement.' 
+                      : 'Account shortfall detected for upcoming EMI. Please replenish capital.'}
+                  </p>
+                </div>
+              </div>
+
+              <!-- 2. System Standing -->
+              <div class="widget p-6">
+                <div class="flex items-center gap-3 mb-6">
+                  <div class="w-8 h-8 rounded bg-primary/10 flex items-center justify-center text-primary">
+                    <i data-lucide="shield-check" size="18"></i>
+                  </div>
+                  <h3 class="text-[10px] font-black uppercase tracking-[0.2em]">Institutional Health</h3>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                  <div class="p-4 bg-muted/20 rounded border border-border/40">
+                    <p class="text-[9px] font-black uppercase opacity-40 mb-1">Score</p>
+                    <p class="text-xl font-number font-bold">${health.score}</p>
+                  </div>
+                  <div class="p-4 bg-muted/20 rounded border border-border/40">
+                    <p class="text-[9px] font-black uppercase opacity-40 mb-1">Grade</p>
+                    <p class="text-xl font-number font-bold text-primary">${health.grade}</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 3. Smart Tasks -->
+              <div class="widget">
+                <div class="panel-header border-b px-6 py-4">
+                  <h3 class="text-xs font-black uppercase tracking-widest">Active Tasks</h3>
+                </div>
+                <div class="p-2 space-y-1">
+                  <div class="p-4 hover:bg-muted/30 transition-all rounded group cursor-pointer" onclick="window.location.href='emi-reminders.html'">
+                    <div class="flex items-center gap-3">
+                      <div class="w-2 h-2 rounded-full bg-amber-500"></div>
+                      <span class="text-xs font-bold text-foreground">Verify Upcoming EMI</span>
+                      <i data-lucide="chevron-right" size="14" class="ml-auto opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                    </div>
+                  </div>
+                  <div class="p-4 hover:bg-muted/30 transition-all rounded group cursor-pointer" onclick="window.location.href='settings.html'">
+                    <div class="flex items-center gap-3">
+                      <div class="w-2 h-2 rounded-full bg-primary"></div>
+                      <span class="text-xs font-bold text-foreground">Complete Profile Audit</span>
+                      <i data-lucide="chevron-right" size="14" class="ml-auto opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        `;
+        lucide.createIcons();
+      } catch (err) { console.error(err); }
+    }
+
+    /* ─── MANAGER COMMAND HUB ─── */
+    async function renderManagerHub() {
+      const hub = document.getElementById('dashboard-hub');
+      const actions = document.getElementById('header-actions');
+
+      actions.innerHTML = `
+        <button onclick="window.location.href='applications.html'" class="btn-primary py-3 px-8 text-xs font-black uppercase tracking-widest">
+          Portfolio Audit Queue
+        </button>
+      `;
+
+      try {
+        const [stats, chartData, apps] = await Promise.all([
+          window.api.getManagerStats(),
+          window.api.getManagerChartData().catch(() => null),
+          window.api.getApplications().catch(() => [])
+        ]);
+
+        hub.innerHTML = `
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <!-- Main Content: Institutional Pulse -->
+            <div class="lg:col-span-8 space-y-8">
+              
+              <!-- 1. AUM Summary Card -->
+              <div class="hero-banner p-10 shadow-2xl">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+                  <div class="space-y-4">
+                    <p class="text-[10px] font-black uppercase tracking-[0.4em] opacity-40">Portfolio Volume (AUM)</p>
+                    <h2 class="text-4xl font-number font-bold tracking-tight">${window.loanPredictor.formatCurrency(stats.approved_volume)}</h2>
+                    <p class="text-[10px] font-bold text-primary-foreground/60 uppercase">Institutional Assets Under Mgmt</p>
+                  </div>
+                  <div class="space-y-4">
+                    <p class="text-[10px] font-black uppercase tracking-[0.4em] opacity-40">Realized Yield</p>
+                    <h2 class="text-4xl font-number font-bold text-primary-foreground tracking-tight">${window.loanPredictor.formatCurrency(stats.interest_earned)}</h2>
+                    <p class="text-[10px] font-bold text-primary-foreground/60 uppercase">Cumulative Interest Settled</p>
+                  </div>
+                  <div class="space-y-4">
+                    <p class="text-[10px] font-black uppercase tracking-[0.4em] opacity-40">Risk Engine Accuracy</p>
+                    <h2 class="text-4xl font-number font-bold tracking-tight">98.2%</h2>
+                    <p class="text-[10px] font-bold text-primary-foreground/60 uppercase">Random Forest Performance</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 2. Portfolio Trends Chart -->
+              <div class="widget">
+                <div class="panel-header border-b px-6 py-4 flex justify-between items-center">
+                  <h3 class="text-xs font-black uppercase tracking-widest">Capital Disbursement Trends</h3>
+                  <i data-lucide="trending-up" size="14" class="text-muted-foreground/40"></i>
+                </div>
+                <div class="p-8 h-[350px]">
+                  <canvas id="manager-trend-chart"></canvas>
+                </div>
+              </div>
+
+              <!-- 3. Operational Queue (Top 5 Pending) -->
+              <div class="widget">
+                <div class="panel-header border-b px-6 py-4 flex justify-between items-center">
+                  <h3 class="text-xs font-black uppercase tracking-widest">Awaiting Verification</h3>
+                  <button onclick="window.location.href='applications.html'" class="text-[10px] font-bold text-primary uppercase">Full Queue</button>
+                </div>
+                <div class="overflow-x-auto">
+                  <table class="w-full text-sm">
+                    <tbody id="pending-table-body">
+                      ${apps.filter(a => a.status === 'pending').slice(0, 5).map(a => `
+                        <tr class="hover:bg-muted/5 transition-colors border-b last:border-0">
+                          <td class="px-6 py-4">
+                            <p class="font-bold text-xs text-foreground">${a.applicant_name}</p>
+                            <p class="text-[9px] text-muted-foreground uppercase font-black">REF: ${a.id.split('-')[0].toUpperCase()}</p>
+                          </td>
+                          <td class="px-6 py-4 font-number font-bold text-xs">${window.loanPredictor.formatCurrency(a.loan_amount)}</td>
+                          <td class="px-6 py-4">
+                            <div class="flex items-center gap-2">
+                              <span class="text-[10px] font-bold text-primary uppercase">Risk: ${a.risk_score || '0'}</span>
+                              <div class="w-12 h-1 bg-muted rounded-full overflow-hidden">
+                                <div class="h-full bg-primary" style="width: ${a.risk_score || 0}%"></div>
+                              </div>
+                            </div>
+                          </td>
+                          <td class="px-6 py-4 text-right">
+                            <button onclick="window.location.href='applications.html'" class="text-[10px] font-black uppercase text-primary border-b border-primary/20 hover:border-primary transition-all">Review</button>
+                          </td>
+                        </tr>
+                      `).join('') || '<tr><td colspan="4" class="p-10 text-center text-xs italic text-muted-foreground">Audit queue is currently clear.</td></tr>'}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Sidebar: Institutional Health -->
+            <div class="lg:col-span-4 space-y-8">
+              
+              <!-- 1. Audit Pulse -->
+              <div class="widget p-6 bg-primary/5 border-primary/20">
+                <h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-primary mb-6">Audit Pulse</h3>
+                <div class="space-y-6">
+                  <div class="flex justify-between items-center">
+                    <span class="text-xs font-bold text-muted-foreground">Pending Applications</span>
+                    <span class="text-lg font-number font-bold ${stats.pending_apps > 0 ? 'text-destructive' : ''}">${stats.pending_apps}</span>
+                  </div>
+                  <div class="flex justify-between items-center">
+                    <span class="text-xs font-bold text-muted-foreground">Pending Verifications</span>
+                    <span class="text-lg font-number font-bold">${stats.pending_verifications}</span>
+                  </div>
+                  <div class="h-px bg-primary/10"></div>
+                  <button onclick="window.location.href='customers.html'" class="btn-secondary w-full justify-center py-3 text-[10px] font-black uppercase tracking-widest">
+                    Process Identities
+                  </button>
+                </div>
+              </div>
+
+              <!-- 2. Yield Intelligence -->
+              <div class="widget p-6">
+                <h3 class="text-[10px] font-black uppercase tracking-[0.2em] mb-6">Yield Intelligence</h3>
+                <div class="space-y-4">
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold text-muted-foreground">Portfolio ROI</span>
+                    <span class="text-lg font-number font-bold">11.4%</span>
+                  </div>
+                  <p class="text-[10px] text-muted-foreground leading-relaxed italic">
+                    Average interest spread across ${stats.total_customers} validated institutional profiles.
+                  </p>
+                </div>
+              </div>
+
+              <!-- 3. System Infrastructure -->
+              <div class="widget">
+                <div class="panel-header border-b px-6 py-4">
+                  <h3 class="text-xs font-black uppercase tracking-widest">Infrastructure</h3>
+                </div>
+                <div class="p-6 space-y-4">
+                  <div class="flex items-center justify-between text-xs">
+                    <span class="font-bold text-muted-foreground">Engine Status</span>
+                    <span class="text-primary font-black uppercase tracking-widest">Healthy</span>
+                  </div>
+                  <div class="flex items-center justify-between text-xs">
+                    <span class="font-bold text-muted-foreground">DB Registry</span>
+                    <span class="text-foreground font-number font-bold">lendmark.db</span>
+                  </div>
+                  <div class="flex items-center justify-between text-xs">
+                    <span class="font-bold text-muted-foreground">Last Audit</span>
+                    <span class="text-muted-foreground font-number">${new Date().toLocaleTimeString()}</span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        `;
+
+        if (chartData) renderManagerTrendChart(chartData);
+        lucide.createIcons();
+      } catch (err) { console.error(err); }
+    }
+
+    function renderManagerTrendChart(data) {
+      const ctx = document.getElementById('manager-trend-chart').getContext('2d');
+      const months = data.monthly_trends.map(t => t.month);
+      const values = data.monthly_trends.map(t => t.volume);
+
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: months,
+          datasets: [{
+            label: 'Institutional Volume',
+            data: values,
+            borderColor: 'hsl(218, 52%, 28%)',
+            backgroundColor: 'rgba(34, 53, 91, 0.05)',
+            borderWidth: 3,
+            tension: 0.4,
+            fill: true,
+            pointRadius: 5,
+            pointBackgroundColor: '#fff',
+            pointBorderColor: 'hsl(218, 52%, 28%)',
+            pointBorderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: { display: false }, ticks: { font: { size: 10, weight: 'bold' } } },
+            y: { grid: { color: 'rgba(0,0,0,0.03)' }, ticks: { font: { size: 10 }, callback: v => '₹' + v.toLocaleString() } }
+          }
+        }
+      });
+    }
+  </script>
+</body>
+</html>

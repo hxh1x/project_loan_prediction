@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lendmark — Transaction Ledger</title>
+  <meta name="description" content="Lendmark Institutional Banking — Detailed record of financial movements and account settlements.">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+  <script src="js/theme-config.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-background text-foreground antialiased">
+  <div class="app-layout">
+    <div id="sidebar-container" class="sidebar-wrapper"></div>
+    <main class="main-content">
+      <div class="p-6 max-w-[1100px] mx-auto">
+        
+        <!-- Page Header -->
+        <div class="page-header">
+          <div class="flex items-center justify-between gap-4">
+            <div>
+              <h1>Transaction Ledger</h1>
+              <p>Detailed record of historical financial movements and institutional balance adjustments.</p>
+            </div>
+            <button id="new-txn-btn" onclick="toggleForm()" class="btn-primary hidden py-2.5">
+              <i data-lucide="plus-circle" size="16"></i> Record Entry
+            </button>
+          </div>
+        </div>
+
+        <!-- Metrics Overview -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+          <div class="stat-card">
+            <p class="stat-label">Institutional Balance</p>
+            <p id="balance-val" class="stat-value">₹0</p>
+            <p class="text-[10px] text-muted-foreground font-medium mt-1 uppercase tracking-wider">Current Liquidity</p>
+          </div>
+
+          <div class="stat-card">
+            <p class="stat-label">Aggregate Credits</p>
+            <p id="credit-val" class="stat-value text-primary">₹0</p>
+            <p class="text-[10px] text-muted-foreground font-medium mt-1 uppercase tracking-wider">Total Inward Flow</p>
+          </div>
+
+          <div class="stat-card">
+            <p class="stat-label">Aggregate Debits</p>
+            <p id="debit-val" class="stat-value">₹0</p>
+            <p class="text-[10px] text-muted-foreground font-medium mt-1 uppercase tracking-wider">Total Outward Flow</p>
+          </div>
+        </div>
+
+        <!-- New Entry Panel (Manager Only) -->
+        <div id="txn-form" class="hidden mb-8 panel">
+          <div class="panel-header">
+            <h3>Transaction Authorization</h3>
+            <button onclick="toggleForm()" class="text-muted-foreground hover:text-foreground">
+              <i data-lucide="x" size="18"></i>
+            </button>
+          </div>
+          <div class="p-6">
+            <form id="create-txn-form" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div class="space-y-1.5 md:col-span-2">
+                <label class="text-[10px] font-bold uppercase tracking-wider text-muted-foreground ml-1">Target Account Profile</label>
+                <select id="txn-user-id" required class="formal-input py-3"></select>
+              </div>
+              <div class="space-y-1.5">
+                <label class="text-[10px] font-bold uppercase tracking-wider text-muted-foreground ml-1">Settlement Category</label>
+                <select id="txn-type" required class="formal-input py-3">
+                  <option value="credit">Credit (Deposit / Disbursement)</option>
+                  <option value="debit">Debit (Withdrawal / EMI)</option>
+                </select>
+              </div>
+              <div class="space-y-1.5">
+                <label class="text-[10px] font-bold uppercase tracking-wider text-muted-foreground ml-1">Capital Amount (₹)</label>
+                <input type="number" id="txn-amount" required min="1" placeholder="0.00" class="formal-input py-3 font-semibold">
+              </div>
+              <div class="space-y-1.5 md:col-span-2">
+                <label class="text-[10px] font-bold uppercase tracking-wider text-muted-foreground ml-1">Narration / Memo</label>
+                <input type="text" id="txn-desc" required placeholder="Nature of entry..." class="formal-input py-3">
+              </div>
+              <div class="md:col-span-2 flex justify-end gap-3 pt-2">
+                <button type="button" onclick="toggleForm()" class="btn-secondary px-8">Discard</button>
+                <button type="submit" id="txn-submit-btn" class="btn-primary px-10">Authorize Entry</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Ledger Table -->
+        <div class="panel">
+          <div class="overflow-x-auto">
+            <table class="w-full">
+              <thead>
+                <tr>
+                  <th class="w-32">Type</th>
+                  <th id="th-customer" class="hidden">Account Holder</th>
+                  <th>Narration</th>
+                  <th>Movement</th>
+                  <th>Resulting Balance</th>
+                  <th class="text-right">Authorized At</th>
+                </tr>
+              </thead>
+              <tbody id="txn-table-body">
+                <tr><td colspan="6" class="text-center py-20 text-xs text-muted-foreground italic animate-pulse">Syncing transaction registry...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/api-client.js"></script>
+  <script src="js/dashboard.js"></script>
+  <script src="js/loan-predictor.js"></script>
+  <script>
+    let isManager = false;
+    let transactions = [];
+    let profiles = [];
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const user = await window.api.verifySession();
+      if (!user) { window.location.href = 'auth.html'; return; }
+      isManager = user.role === 'manager';
+      window.currentUser = user;
+
+      if (isManager) {
+        document.getElementById('new-txn-btn').classList.remove('hidden');
+        document.getElementById('th-customer').classList.remove('hidden');
+      }
+
+      await initDashboard();
+      await fetchData();
+    });
+
+    async function fetchData() {
+      try {
+        transactions = await window.api.getTransactions().catch(() => []);
+        if (isManager) {
+          profiles = await window.api.getProfiles().catch(() => []);
+          const select = document.getElementById('txn-user-id');
+          select.innerHTML = '<option value="">Select customer profile...</option>' +
+            profiles.map(p => `<option value="${p.user_id}">${p.full_name || 'Anonymous'} [${p.account_number || 'N/A'}]</option>`).join('');
+        }
+        renderPage();
+      } catch (err) { console.error(err); }
+    }
+
+    function renderPage() {
+      let latestBalance = transactions.length > 0 ? transactions[0].balance : 0;
+      const totalCredit = transactions.filter(t => t.type === 'credit').reduce((s, t) => s + t.amount, 0);
+      const totalDebit  = transactions.filter(t => t.type === 'debit').reduce((s, t) => s + t.amount, 0);
+
+      document.getElementById('balance-val').textContent = window.loanPredictor.formatCurrency(latestBalance);
+      document.getElementById('credit-val').textContent  = window.loanPredictor.formatCurrency(totalCredit);
+      document.getElementById('debit-val').textContent   = window.loanPredictor.formatCurrency(totalDebit);
+
+      const tbody = document.getElementById('txn-table-body');
+      if (!transactions.length) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center py-20 text-xs text-muted-foreground italic">No historical movements detected.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = transactions.map(t => {
+        const profile = profiles.find(p => p.user_id === t.user_id);
+        const isCredit = t.type === 'credit';
+        const badgeClass = isCredit ? 'badge-approved' : 'badge-rejected';
+        
+        return `
+          <tr>
+            <td>
+              <span class="badge ${badgeClass}">
+                <i data-lucide="${isCredit ? 'arrow-down-left' : 'arrow-up-right'}" size="11"></i>
+                ${t.type}
+              </span>
+            </td>
+            ${isManager ? `<td class="font-semibold text-xs text-foreground">${profile ? profile.full_name : 'Unknown User'}</td>` : ''}
+            <td class="text-muted-foreground font-medium text-xs">${t.description}</td>
+            <td class="font-bold text-xs ${isCredit ? 'text-primary' : 'text-foreground'}">
+              ${isCredit ? '+' : '−'}${window.loanPredictor.formatCurrency(t.amount)}
+            </td>
+            <td class="text-muted-foreground/80 font-bold text-xs">${window.loanPredictor.formatCurrency(t.balance)}</td>
+            <td class="text-right text-[10px] font-bold text-muted-foreground/50 uppercase">
+              ${new Date(t.created_at).toLocaleString([], { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' })}
+            </td>
+          </tr>`;
+      }).join('');
+      lucide.createIcons();
+    }
+
+    function toggleForm() {
+      const form = document.getElementById('txn-form');
+      form.classList.toggle('hidden');
+    }
+
+    document.getElementById('create-txn-form').onsubmit = async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('txn-submit-btn');
+      btn.disabled = true;
+      try {
+        await window.api.createTransaction({
+          user_id: document.getElementById('txn-user-id').value,
+          type: document.getElementById('txn-type').value,
+          amount: Number(document.getElementById('txn-amount').value),
+          description: document.getElementById('txn-desc').value,
+        });
+        toggleForm();
+        document.getElementById('create-txn-form').reset();
+        await fetchData();
+      } catch (err) { alert(err.message); }
+      finally { btn.disabled = false; }
+    };
+  </script>
+</body>
+</html>

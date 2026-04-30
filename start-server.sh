@@ -14,4 +14,4 @@ echo "  URL:  http://localhost:5001"
 echo "  Auth: harixx@gmail.com / harixx"
 echo ""
 
-python3 server.py
+python3 backend/server.py

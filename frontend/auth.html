@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lendmark — Secure Access Portal</title>
+  <meta name="description" content="Lendmark Institutional Banking — Secure login and account enrollment portal.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+  <script src="js/theme-config.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    /* ── Auth-specific overrides ── */
+    body { margin: 0; min-height: 100vh; display: flex; }
+
+    .auth-wrap {
+      display: flex;
+      width: 100%;
+      min-height: 100vh;
+    }
+
+    /* ────── LEFT PANEL ────── */
+    .auth-left {
+      width: 42%;
+      min-height: 100vh;
+      background: hsl(218 52% 16%);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 3rem 3.5rem;
+      position: relative;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    /* Geometric decorative pattern */
+    .auth-left::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(hsl(218 52% 22% / 0.6) 1px, transparent 1px),
+        linear-gradient(90deg, hsl(218 52% 22% / 0.6) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+    }
+
+    /* Gradient glow top-right */
+    .auth-left::after {
+      content: '';
+      position: absolute;
+      top: -80px;
+      right: -80px;
+      width: 300px;
+      height: 300px;
+      background: radial-gradient(circle, hsl(215 55% 45% / 0.35) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .auth-left-content { position: relative; z-index: 1; }
+
+    .auth-brand-logo {
+      width: 48px; height: 48px;
+      background: hsl(215 55% 30%);
+      border: 1px solid hsl(215 55% 40%);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 2rem;
+    }
+
+    .auth-brand-name {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 2rem;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+      margin-bottom: 0.4rem;
+    }
+
+    .auth-brand-sub {
+      font-size: 0.68rem;
+      font-weight: 500;
+      color: hsl(215 35% 65%);
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      margin-bottom: 2.5rem;
+    }
+
+    .auth-tagline {
+      font-size: 0.82rem;
+      color: hsl(215 35% 70%);
+      line-height: 1.7;
+      max-width: 280px;
+      margin-bottom: 3rem;
+      border-left: 2px solid hsl(215 55% 45%);
+      padding-left: 1rem;
+    }
+
+    .auth-feature {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.875rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .auth-feature-icon {
+      width: 32px; height: 32px;
+      background: hsl(215 55% 24%);
+      border: 1px solid hsl(215 55% 32%);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .auth-feature-title {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 0.2rem;
+    }
+
+    .auth-feature-desc {
+      font-size: 0.7rem;
+      color: hsl(215 35% 60%);
+      line-height: 1.55;
+    }
+
+    .auth-left-footer {
+      position: relative;
+      z-index: 1;
+      padding-top: 2rem;
+      border-top: 1px solid hsl(215 52% 24%);
+    }
+
+    .auth-left-footer p {
+      font-size: 0.65rem;
+      color: hsl(215 35% 42%);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    /* ────── RIGHT PANEL ────── */
+    .auth-right {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 3rem 2.5rem;
+      background: hsl(var(--background));
+      min-height: 100vh;
+      overflow-y: auto;
+    }
+
+    .auth-form-card {
+      width: 100%;
+      max-width: 420px;
+    }
+
+    /* Tab switcher */
+    .auth-tabs {
+      display: flex;
+      gap: 0;
+      border: 1px solid hsl(var(--border));
+      border-radius: 6px;
+      overflow: hidden;
+      margin-bottom: 2rem;
+      background: hsl(var(--muted) / 0.5);
+    }
+
+    .auth-tab {
+      flex: 1;
+      padding: 0.6rem 1rem;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      text-align: center;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      color: hsl(var(--muted-foreground));
+      transition: all 0.2s;
+    }
+
+    .auth-tab.active {
+      background: hsl(var(--card));
+      color: hsl(var(--foreground));
+      box-shadow: 0 1px 3px hsl(0 0% 0% / 0.08);
+    }
+
+    /* Form label */
+    .form-label {
+      display: block;
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      color: hsl(var(--muted-foreground));
+      margin-bottom: 0.4rem;
+    }
+
+    /* Form group */
+    .form-group { margin-bottom: 1.1rem; }
+
+    /* Input with icon */
+    .input-wrap { position: relative; }
+
+    .input-wrap .input-icon {
+      position: absolute;
+      left: 0.8rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: hsl(var(--muted-foreground) / 0.5);
+      pointer-events: none;
+    }
+
+    .input-wrap .formal-input { padding-left: 2.4rem; }
+
+    /* Divider */
+    .form-divider {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin: 1.25rem 0;
+    }
+
+    .form-divider::before,
+    .form-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: hsl(var(--border));
+    }
+
+    .form-divider span {
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: hsl(var(--muted-foreground) / 0.6);
+      white-space: nowrap;
+    }
+
+    /* Submit button */
+    .auth-submit {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      background: hsl(var(--primary));
+      color: hsl(var(--primary-foreground));
+      border: none;
+      border-radius: 4px;
+      padding: 0.75rem 1.5rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+      margin-top: 0.5rem;
+    }
+
+    .auth-submit:hover {
+      background: hsl(218 52% 22%);
+      box-shadow: 0 4px 16px hsl(var(--primary) / 0.3);
+      transform: translateY(-1px);
+    }
+
+    .auth-submit:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Toggle link */
+    .auth-toggle-row {
+      text-align: center;
+      margin-top: 1.25rem;
+      font-size: 0.72rem;
+      color: hsl(var(--muted-foreground));
+    }
+
+    .auth-toggle-row button {
+      background: none;
+      border: none;
+      color: hsl(var(--primary));
+      font-size: 0.72rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      padding: 0;
+      margin-left: 4px;
+    }
+
+    /* Alert messages */
+    .auth-alert {
+      padding: 0.75rem 1rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      line-height: 1.5;
+      margin-bottom: 1rem;
+      display: none;
+      border: 1px solid;
+    }
+
+    .auth-alert.error {
+      background: hsl(var(--destructive) / 0.06);
+      border-color: hsl(var(--destructive) / 0.25);
+      color: hsl(var(--destructive));
+    }
+
+    .auth-alert.success {
+      background: hsl(var(--primary) / 0.06);
+      border-color: hsl(var(--primary) / 0.25);
+      color: hsl(var(--primary));
+    }
+
+    /* Compliance strip */
+    .auth-compliance {
+      margin-top: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .auth-badge {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.62rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: hsl(var(--muted-foreground) / 0.5);
+    }
+
+    /* Theme toggle */
+    .theme-btn {
+      position: fixed;
+      top: 1.25rem;
+      right: 1.5rem;
+      z-index: 99;
+      padding: 0.5rem;
+      border-radius: 4px;
+      border: 1px solid hsl(var(--border));
+      background: hsl(var(--card));
+      color: hsl(var(--muted-foreground));
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .theme-btn:hover { background: hsl(var(--muted)); color: hsl(var(--foreground)); }
+
+    /* Signup fields grid */
+    .signup-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0 1rem;
+    }
+
+    .signup-grid .full { grid-column: 1 / -1; }
+
+    /* MPIN input */
+    .mpin-input {
+      text-align: center;
+      font-size: 1.25rem;
+      letter-spacing: 0.5em;
+      font-weight: 600;
+    }
+
+    @media (max-width: 900px) {
+      .auth-left { display: none; }
+      .auth-right { padding: 2rem 1.5rem; }
+    }
+  </style>
+</head>
+<body class="bg-background text-foreground antialiased">
+
+  <button id="theme-toggle" class="theme-btn" title="Toggle theme">
+    <i data-lucide="moon" class="hidden dark:block" size="15"></i>
+    <i data-lucide="sun" class="block dark:hidden" size="15"></i>
+  </button>
+
+  <div class="auth-wrap">
+
+    <!-- ══════════ LEFT PANEL ══════════ -->
+    <div class="auth-left">
+      <div class="auth-left-content">
+
+        <!-- Logo mark -->
+        <div class="auth-brand-logo">
+          <i data-lucide="landmark" size="22" style="color: hsl(215 55% 75%)"></i>
+        </div>
+
+        <p class="auth-brand-name">Lendmark</p>
+        <p class="auth-brand-sub">Institutional Banking</p>
+
+        <p class="auth-tagline">
+          A trusted partner for institutional lending and financial services. Secure, transparent, and built for professionals.
+        </p>
+
+        <!-- Features -->
+        <div class="auth-feature">
+          <div class="auth-feature-icon">
+            <i data-lucide="shield-check" size="15" style="color: hsl(215 55% 65%)"></i>
+          </div>
+          <div>
+            <p class="auth-feature-title">Bank-Grade Security</p>
+            <p class="auth-feature-desc">256-bit SSL encryption on all data transmissions and API communications.</p>
+          </div>
+        </div>
+
+        <div class="auth-feature">
+          <div class="auth-feature-icon">
+            <i data-lucide="cpu" size="15" style="color: hsl(215 55% 65%)"></i>
+          </div>
+          <div>
+            <p class="auth-feature-title">AI Credit Assessment</p>
+            <p class="auth-feature-desc">Machine learning engine for rapid, objective loan eligibility decisions.</p>
+          </div>
+        </div>
+
+        <div class="auth-feature">
+          <div class="auth-feature-icon">
+            <i data-lucide="file-check" size="15" style="color: hsl(215 55% 65%)"></i>
+          </div>
+          <div>
+            <p class="auth-feature-title">Regulatory Compliance</p>
+            <p class="auth-feature-desc">Fully compliant with established banking and financial regulations.</p>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="auth-left-footer">
+        <p>© 2025 Lendmark Financial Institution</p>
+        <p style="margin-top:0.3rem">Member FDIC · Equal Housing Lender</p>
+      </div>
+    </div>
+
+    <!-- ══════════ RIGHT PANEL ══════════ -->
+    <div class="auth-right">
+      <div class="auth-form-card">
+
+        <!-- Mobile logo (only on small screens) -->
+        <div style="display:none; align-items:center; gap:0.6rem; margin-bottom:1.75rem;" id="mobile-logo">
+          <div style="width:34px;height:34px;background:hsl(var(--primary));border-radius:4px;display:flex;align-items:center;justify-content:center;">
+            <i data-lucide="landmark" size="18" style="color:#fff"></i>
+          </div>
+          <div>
+            <p style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:hsl(var(--foreground));line-height:1">Lendmark</p>
+            <p style="font-size:0.6rem;letter-spacing:0.12em;text-transform:uppercase;color:hsl(var(--muted-foreground))">Institutional Banking</p>
+          </div>
+        </div>
+
+        <!-- Header -->
+        <div style="margin-bottom:1.75rem;">
+          <h2 id="auth-title" style="font-family:'Playfair Display',Georgia,serif;font-size:1.4rem;font-weight:700;color:hsl(var(--foreground));letter-spacing:-0.01em;margin-bottom:0.35rem;">
+            Welcome Back
+          </h2>
+          <p id="auth-desc" style="font-size:0.78rem;color:hsl(var(--muted-foreground));line-height:1.5;">
+            Sign in with your registered email address and password.
+          </p>
+        </div>
+
+        <!-- Tab switcher -->
+        <div class="auth-tabs" role="tablist">
+          <button class="auth-tab active" id="tab-login" onclick="setAuthMode(true)" role="tab">Sign In</button>
+          <button class="auth-tab" id="tab-register" onclick="setAuthMode(false)" role="tab">Register</button>
+        </div>
+
+        <!-- Alert messages -->
+        <div id="error-msg" class="auth-alert error"></div>
+        <div id="success-msg" class="auth-alert success"></div>
+
+        <!-- Form -->
+        <form id="auth-form" novalidate>
+
+          <!-- ── LOGIN FIELDS ── -->
+          <div id="common-fields">
+            <div class="form-group">
+              <label class="form-label" for="email">Email Address</label>
+              <div class="input-wrap">
+                <i data-lucide="mail" size="14" class="input-icon"></i>
+                <input type="email" id="email" required class="formal-input" placeholder="your@email.com">
+              </div>
+            </div>
+
+            <div id="password-field-container" class="form-group">
+              <label class="form-label" for="password">Password</label>
+              <div class="input-wrap">
+                <i data-lucide="lock" size="14" class="input-icon"></i>
+                <input type="password" id="password" required minlength="6" class="formal-input" placeholder="••••••••">
+              </div>
+            </div>
+          </div>
+
+          <!-- ── SIGNUP FIELDS ── -->
+          <div id="signup-fields" class="hidden">
+            <div class="form-divider"><span>Account Details</span></div>
+
+            <div class="signup-grid">
+              <!-- Full Name -->
+              <div class="form-group full">
+                <label class="form-label" for="full-name">Full Legal Name</label>
+                <div class="input-wrap">
+                  <i data-lucide="user" size="14" class="input-icon"></i>
+                  <input type="text" id="full-name" class="formal-input" placeholder="As per government-issued ID">
+                </div>
+              </div>
+
+              <!-- Phone -->
+              <div class="form-group">
+                <label class="form-label" for="phone">Phone</label>
+                <input type="tel" id="phone" class="formal-input" placeholder="+91 00000 00000">
+              </div>
+
+              <!-- DOB -->
+              <div class="form-group">
+                <label class="form-label" for="dob">Date of Birth</label>
+                <input type="date" id="dob" class="formal-input" style="cursor:pointer;">
+              </div>
+
+              <!-- Address -->
+              <div class="form-group full">
+                <label class="form-label" for="address">Residential Address</label>
+                <textarea id="address" rows="2" class="formal-input" style="resize:none;" placeholder="Full address including city and PIN code"></textarea>
+              </div>
+
+              <!-- MPIN -->
+              <div class="form-group full">
+                <label class="form-label" for="mpin">Transaction PIN <span style="font-weight:400;text-transform:none;letter-spacing:0;">(4 digits)</span></label>
+                <input type="password" id="mpin" maxlength="4" class="formal-input mpin-input" placeholder="••••">
+                <p style="font-size:0.68rem;color:hsl(var(--muted-foreground));margin-top:0.35rem;">Required to authorise all repayment transactions.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Submit -->
+          <button type="submit" id="submit-btn" class="auth-submit">
+            <i data-lucide="lock-keyhole" size="14"></i>
+            <span id="submit-btn-text">Sign In</span>
+          </button>
+
+          <!-- Toggle -->
+          <div class="auth-toggle-row">
+            <span id="toggle-prefix">Don't have an account?</span>
+            <button type="button" id="toggle-auth">Register Now</button>
+          </div>
+        </form>
+
+        <!-- Compliance badges -->
+        <div class="auth-compliance">
+          <div class="auth-badge">
+            <i data-lucide="shield-check" size="11"></i>
+            SSL Secured
+          </div>
+          <div class="auth-badge">
+            <i data-lucide="lock" size="11"></i>
+            256-bit Encrypted
+          </div>
+          <div class="auth-badge">
+            <i data-lucide="file-check" size="11"></i>
+            RBI Compliant
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script src="js/api-client.js"></script>
+  <script>
+    let isLogin = true;
+
+    // Show mobile logo on small screens
+    if (window.innerWidth <= 900) {
+      document.getElementById('mobile-logo').style.display = 'flex';
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+      document.getElementById('theme-toggle').onclick = () => {
+        if (typeof toggleDarkMode === 'function') toggleDarkMode();
+        lucide.createIcons();
+      };
+    });
+
+    (async () => {
+      const user = await window.api.verifySession();
+      if (user) window.location.href = 'index.html';
+    })();
+
+    function setAuthMode(login) {
+      isLogin = login;
+
+      // Update tabs
+      document.getElementById('tab-login').classList.toggle('active', isLogin);
+      document.getElementById('tab-register').classList.toggle('active', !isLogin);
+
+      // Update heading
+      document.getElementById('auth-title').textContent = isLogin ? 'Welcome Back' : 'Open an Account';
+      document.getElementById('auth-desc').textContent = isLogin
+        ? 'Sign in with your registered email address and password.'
+        : 'Complete the form below to create your institutional account.';
+
+      // Show/hide signup fields
+      document.getElementById('signup-fields').classList.toggle('hidden', isLogin);
+
+      // Update button
+      document.getElementById('submit-btn').innerHTML = isLogin
+        ? '<i data-lucide="lock-keyhole" size="14"></i><span id="submit-btn-text">Sign In</span>'
+        : '<i data-lucide="user-plus" size="14"></i><span id="submit-btn-text">Create Account</span>';
+
+      // Update toggle
+      document.getElementById('toggle-prefix').textContent = isLogin ? "Don't have an account?" : "Already registered?";
+      document.getElementById('toggle-auth').textContent   = isLogin ? "Register Now" : "Sign In";
+
+      // Clear messages
+      document.getElementById('error-msg').style.display   = 'none';
+      document.getElementById('success-msg').style.display = 'none';
+
+      lucide.createIcons();
+    }
+
+    document.getElementById('toggle-auth').onclick = () => setAuthMode(!isLogin);
+
+    document.getElementById('auth-form').onsubmit = async (e) => {
+      e.preventDefault();
+      const errorMsg  = document.getElementById('error-msg');
+      const successMsg = document.getElementById('success-msg');
+      const submitBtn = document.getElementById('submit-btn');
+
+      errorMsg.style.display   = 'none';
+      successMsg.style.display = 'none';
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i data-lucide="loader-2" size="14" class="animate-spin"></i><span>Processing…</span>';
+      lucide.createIcons();
+
+      const email    = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const fullName = document.getElementById('full-name')?.value.trim()  || '';
+      const phone    = document.getElementById('phone')?.value.trim()       || '';
+      const dob      = document.getElementById('dob')?.value                || '';
+      const address  = document.getElementById('address')?.value.trim()     || '';
+      const mpin     = document.getElementById('mpin')?.value               || '';
+
+      try {
+        if (isLogin) {
+          await window.api.signIn(email, password);
+          window.location.href = 'index.html';
+        } else {
+          if (!mpin.match(/^\d{4}$/)) throw new Error('Transaction PIN must be exactly 4 numeric digits.');
+          await window.api.signUp({ email, password, full_name: fullName, phone, dob, address, mpin });
+          successMsg.innerHTML = '<b>Registration submitted.</b> Your account is pending manager approval. You will be notified once it is activated.';
+          successMsg.style.display = 'block';
+          setTimeout(() => {
+            setAuthMode(true);
+            document.getElementById('email').value = email;
+            document.getElementById('password').value = '';
+          }, 4500);
+        }
+      } catch (err) {
+        errorMsg.textContent     = err.message || 'Authentication failed. Please check your credentials.';
+        errorMsg.style.display   = 'block';
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = isLogin
+          ? '<i data-lucide="lock-keyhole" size="14"></i><span>Sign In</span>'
+          : '<i data-lucide="user-plus" size="14"></i><span>Create Account</span>';
+        lucide.createIcons();
+      }
+    };
+  </script>
+</body>
+</html>
