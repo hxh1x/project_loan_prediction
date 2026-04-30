@@ -12,11 +12,12 @@ Lendmark features role-specific interactive dashboards that provide real-time te
 *   **Portfolio Liquidity**: Real-time auditing of Assets Under Management (AUM) and realized interest yield.
 *   **Predictive Intelligence**: Integrated Random Forest analytics for credit risk profiling with 98.2% model accuracy.
 *   **Operational Queue**: Sectional audit reports for loan applications, featuring full asset portfolio breakdowns and Loss Probability (PD) indices.
+*   **Customer Insights**: 360-degree registry of all institutional clients with integrated ledger history.
 
 ### **Customer: Capital Repayment Hub**
 *   **Repayment Roadmap**: Interactive timeline mapping past settlements and future amortization schedules.
 *   **Financial Pulse**: Liquidity forecasting that compares current capital against upcoming EMI liabilities.
-*   **System Integrity**: Integrated credit scoring and institutional health grading.
+*   **Asset Breakdown**: Real-time visualization of residential, commercial, and liquid capital holdings.
 
 ---
 
@@ -35,16 +36,17 @@ The project is organized into a clean, scalable directory structure:
 │   ├── css/            # Institutional Design System (Tailwind + Custom)
 │   ├── js/             # API Clients & Dashboard Logic
 │   └── *.html          # Modular Page Templates
-├── data/               # Persistent Storage (Ignored by Git)
-│   └── lendmark.db     # Encrypted SQLite Database
+├── data/               # Persistent Storage
+│   └── lendmark.db     # Pre-populated SQLite Database (Test Environment)
+├── uploads/            # Institutional Document & Identity Assets
 └── start-server.sh     # Unified Deployment Script
 ```
 
 ---
 
-## 🚀 Deployment & Initialization
+## 🚀 Zero-Setup Deployment
 
-Lendmark is designed for zero-config local deployment.
+Lendmark comes pre-packaged with a fully populated test environment, making it 100% portable.
 
 ### 1. Prerequisite Environment
 Ensure you have **Python 3.10+** installed.
@@ -54,13 +56,7 @@ Ensure you have **Python 3.10+** installed.
 pip3 install flask flask-cors pandas scikit-learn joblib
 ```
 
-### 3. Engine Initialization (Optional)
-To train the risk model on the institutional dataset:
-```bash
-python3 backend/ml_model.py
-```
-
-### 4. Launch Command Center
+### 3. Launch Command Center
 ```bash
 ./start-server.sh
 ```
@@ -75,11 +71,11 @@ The platform will be accessible at:
 *   **Registry Sanitization**: Automatic masking of sensitive personal data for administrative roles.
 *   **Institutional MPIN**: Mandatory 4-digit financial authorization for all customer capital movements.
 *   **Data Integrity**: Strictly isolated transaction ledgers with real-time balance synchronization and overdraft protection.
-*   **RBI-AI Framework**: Model parameters optimized for institutional credit datasets and regulatory compliance.
+*   **Predictive Auditing**: Decision weights optimized for institutional credit datasets and regulatory transparency.
 
 ---
 
-## 🔑 Access Credentials
+## 🔑 Access Credentials (Institutional Test Suite)
 
 | Role | Email | Password |
 | :--- | :--- | :--- |
