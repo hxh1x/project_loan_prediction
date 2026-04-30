@@ -8,26 +8,6 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-# Database
-*.db
-*.db-shm
-*.db-wal
-data/*.db
-data/*.db-shm
-data/*.db-wal
-
-# Sensitive data
-customer_credentials.txt
-credentials.txt
-
-# Media / Uploads
-data/uploads/
-uploads/
-
-# ML Model artifacts
-*.joblib
-rf_model_meta.json
-
 # Environments
 .env
 .venv
