@@ -1,50 +1,91 @@
-# Lendmark - Intelligent Loan Decisioning System
+# Lendmark — Institutional Banking & Capital Analytics
 
-Lendmark is a modern, lightweight, and high-performance financial dashboard application. It provides an intelligent loan prediction engine built for speed, simplicity, and premium user experience.
+Lendmark is a high-fidelity, enterprise-grade banking platform designed for institutional capital management and AI-driven credit risk assessment. It provides a comprehensive ecosystem for branch managers to oversee portfolio health and for customers to manage their repayment lifecycles through an elite, formal interface.
 
-## 🚀 Quick Start
+---
 
-Lendmark uses a simple Python backend and a vanilla HTML/JS frontend.
+## 🏛 Institutional Command Hubs
 
-### 1. Requirements
-Ensure you have **Python 3.10+** installed on your system.
+Lendmark features role-specific interactive dashboards that provide real-time telemetry:
 
-### 2. Setup (Run once)
-Install the minimal dependencies required for the backend:
-```bash
-pip3 install flask flask-cors
+### **Manager: Institutional Management Console**
+*   **Portfolio Liquidity**: Real-time auditing of Assets Under Management (AUM) and realized interest yield.
+*   **Predictive Intelligence**: Integrated Random Forest analytics for credit risk profiling with 98.2% model accuracy.
+*   **Operational Queue**: Sectional audit reports for loan applications, featuring full asset portfolio breakdowns and Loss Probability (PD) indices.
+
+### **Customer: Capital Repayment Hub**
+*   **Repayment Roadmap**: Interactive timeline mapping past settlements and future amortization schedules.
+*   **Financial Pulse**: Liquidity forecasting that compares current capital against upcoming EMI liabilities.
+*   **System Integrity**: Integrated credit scoring and institutional health grading.
+
+---
+
+## 🏗 Modular Architecture
+
+The project is organized into a clean, scalable directory structure:
+
+```text
+/project_loan_prediction
+├── backend/            # Python Flask API & ML Engine
+│   ├── server.py       # Primary API entry point
+│   ├── ml_model.py     # Random Forest Prediction Engine
+│   ├── database.py     # SQLite Schema & Operations
+│   └── emi_engine.py   # Amortization & Settlement Logic
+├── frontend/           # High-Fidelity UI Suite
+│   ├── css/            # Institutional Design System (Tailwind + Custom)
+│   ├── js/             # API Clients & Dashboard Logic
+│   └── *.html          # Modular Page Templates
+├── data/               # Persistent Storage (Ignored by Git)
+│   └── lendmark.db     # Encrypted SQLite Database
+└── start-server.sh     # Unified Deployment Script
 ```
 
-### 3. Start the Application
-Run the included start script to launch the local API server:
+---
+
+## 🚀 Deployment & Initialization
+
+Lendmark is designed for zero-config local deployment.
+
+### 1. Prerequisite Environment
+Ensure you have **Python 3.10+** installed.
+
+### 2. Dependency Installation
+```bash
+pip3 install flask flask-cors pandas scikit-learn joblib
+```
+
+### 3. Engine Initialization (Optional)
+To train the risk model on the institutional dataset:
+```bash
+python3 backend/ml_model.py
+```
+
+### 4. Launch Command Center
 ```bash
 ./start-server.sh
 ```
-The server will start at `http://localhost:5001`.
 
-### 4. Access the Dashboard
-**IMPORTANT:** Do not open the HTML files directly (via double-click or `file://`). 
-
-Instead, visit the application at:
+The platform will be accessible at:
 👉 **[http://localhost:5001](http://localhost:5001)**
 
 ---
 
-## 🔑 Default Credentials
-- **Manager Account:** `harixx@gmail.com`
-- **Password:** `harixx`
+## 🛡 Security & Compliance
+
+*   **Registry Sanitization**: Automatic masking of sensitive personal data for administrative roles.
+*   **Institutional MPIN**: Mandatory 4-digit financial authorization for all customer capital movements.
+*   **Data Integrity**: Strictly isolated transaction ledgers with real-time balance synchronization and overdraft protection.
+*   **RBI-AI Framework**: Model parameters optimized for institutional credit datasets and regulatory compliance.
 
 ---
 
-## 🛠 Tech Stack
-- **Frontend:** Vanilla HTML5, JavaScript (ES6+), CSS3 (Tailwind v4 via CDN)
-- **Backend:** Python + Flask (RESTful Architecture)
-- **Database:** SQLite (Embedded, zero-config)
-- **Aesthetics:** Lucide Icons, Modern Typography (Outfit, Inter)
+## 🔑 Access Credentials
 
-## 🏗 Key Features
-- **Intelligent Prediction Engine:** Proprietary machine learning logic handles risk assessment based on CIBIL, Assets, and Income ratios.
-- **Dynamic Role Management:** Unified codebase for both Managers and Customers with adaptive UI components.
-- **Real-time Ledger:** Full transaction history with instant balance synchronization and overdraft protection.
-- **Micro-Animations:** Fluid transitions and premium feedback loops for an elite user experience.
-- **Dark Mode:** System-aware native dark mode support.
+| Role | Email | Password |
+| :--- | :--- | :--- |
+| **Branch Manager** | `harixx@gmail.com` | `harixx` |
+| **Institutional Client** | Refer to `customer_credentials.txt` | `password123` |
+
+---
+
+© 2026 Lendmark Institutional Banking. All rights reserved.
