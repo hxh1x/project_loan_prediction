@@ -21,6 +21,15 @@ Lendmark features role-specific interactive dashboards that provide real-time te
 
 ---
 
+## 🧠 ML Decision Framework
+
+The platform utilizes a **Random Forest Ensemble (200 Trees)** to evaluate institutional credit requests. The model weights are optimized based on:
+- **Financial Registry**: Annual revenue vs. requested principal ratios.
+- **Credit Velocity**: CIBIL history and repayment consistency.
+- **Asset Coverage**: Multi-dimensional asset evaluation (Residential, Commercial, Luxury, Liquid).
+
+---
+
 ## 🏗 Modular Architecture
 
 The project is organized into a clean, scalable directory structure:
@@ -37,8 +46,8 @@ The project is organized into a clean, scalable directory structure:
 │   ├── js/             # API Clients & Dashboard Logic
 │   └── *.html          # Modular Page Templates
 ├── data/               # Persistent Storage
-│   └── lendmark.db     # Pre-populated SQLite Database (Test Environment)
-├── uploads/            # Institutional Document & Identity Assets
+│   ├── lendmark.db     # Pre-populated SQLite Database (Test Environment)
+│   └── uploads/        # Institutional Document & Identity Assets
 └── start-server.sh     # Unified Deployment Script
 ```
 
