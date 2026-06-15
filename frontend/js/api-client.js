@@ -2,7 +2,8 @@
  * Lendmark API Client
  * Replaces Supabase — talks to the local Python Flask server at http://localhost:5000
  */
-var API_BASE = window.location.origin + "/api";
+const API_BASE_URL = "https://your-backend-name.onrender.com";
+var API_BASE = API_BASE_URL + "/api";
 
 const api = {
   _token: localStorage.getItem("lm_token"),
