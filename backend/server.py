@@ -525,6 +525,25 @@ def emi_summary():
     db.close()
     return jsonify({'action_needed': total, 'next_emi': row_to_dict(nxt), 'balance': float(last['balance']) if last else 0, 'outstanding': float(out)})
 
+@app.route("/api/emi/health-score", methods=["GET"])
+def get_emi_health_score():
+    user, err, code = require_auth(request)
+    if err: return err, code
+    db = get_db()
+    uid = user['id']
+    total_emis = db.execute("SELECT COUNT(*) as c FROM emi_schedules WHERE user_id=?", (uid,)).fetchone()['c']
+    paid_emis = db.execute("SELECT COUNT(*) as c FROM emi_schedules WHERE user_id=? AND status='paid'", (uid,)).fetchone()['c']
+    overdue_emis = db.execute("SELECT COUNT(*) as c FROM emi_schedules WHERE user_id=? AND status IN ('failed', 'overdue')", (uid,)).fetchone()['c']
+    
+    score = 100
+    if total_emis > 0:
+        score -= (overdue_emis * 15)
+        score = max(0, min(100, score))
+    
+    grade = "A" if score >= 90 else "B" if score >= 75 else "C" if score >= 60 else "D"
+    db.close()
+    return jsonify({"score": score, "grade": grade})
+
 @app.route("/api/notifications")
 def get_notifications():
     user, err, code = require_auth(request)
@@ -555,8 +574,22 @@ def static_files(path):
         return send_from_directory(FRONTEND_DIR, path)
     return jsonify({"error": "Not Found"}), 404
 
+def emi_worker():
+    import time
+    from emi_engine import process_emi_engine
+    while True:
+        try:
+            db = get_db()
+            process_emi_engine(db)
+            db.close()
+        except Exception as e:
+            print("EMI Worker Error:", e)
+        time.sleep(60)
+
 if __name__ == "__main__":
     init_db()
+    import threading
+    threading.Thread(target=emi_worker, daemon=True).start()
     PORT = 5001
     print(f"  ✅  Lendmark Server Started! http://localhost:{PORT}")
     app.run(debug=True, host="0.0.0.0", port=PORT)
