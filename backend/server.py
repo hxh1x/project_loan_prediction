@@ -570,8 +570,17 @@ def index(): return send_from_directory(FRONTEND_DIR, "auth.html")
 
 @app.route("/<path:path>")
 def static_files(path):
+    # 1. If the path asks for a specific file (like style.css or api-client.js)
     if any(path.endswith(ext) for ext in [".html", ".js", ".css", ".png", ".jpg", ".svg", ".ico"]):
         return send_from_directory(FRONTEND_DIR, path)
+    
+    # 2. If the path has NO extension (e.g., "/dashboard"), automatically serve the .html file!
+    if "." not in path:
+        # Check if the HTML file actually exists to avoid crashing
+        html_file = f"{path}.html"
+        if os.path.exists(os.path.join(FRONTEND_DIR, html_file)):
+            return send_from_directory(FRONTEND_DIR, html_file)
+            
     return jsonify({"error": "Not Found"}), 404
 
 def emi_worker():

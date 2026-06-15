@@ -235,7 +235,7 @@
 
     document.addEventListener('DOMContentLoaded', async () => {
       const user = await window.api.verifySession();
-      if (!user) { window.location.href = 'auth.html'; return; }
+      if (!user) { window.location.href = '/'; return; }
       window.currentUser = user;
       await initDashboard();
       document.getElementById('predict-btn').onclick = handlePredict;
@@ -395,7 +395,7 @@
           risk_score: result.risk_score,
         });
         alert('Institutional submission successfully processed.');
-        window.location.href = 'applications.html';
+        window.location.href = '/applications';
       } catch (err) {
         alert('Submission failed: ' + err.message);
         btn.disabled = false;

@@ -184,7 +184,7 @@
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
       const user = await window.api.verifySession();
-      if (!user) { window.location.href = 'auth.html'; return; }
+      if (!user) { window.location.href = '/'; return; }
       window.currentUser = user;
 
       await initDashboard();
@@ -293,7 +293,7 @@
     async function handleLogout() {
       if (confirm("Terminate institutional session and clear cache?")) {
         await window.api.signOut();
-        window.location.href = 'auth.html';
+        window.location.href = '/';
       }
     }
   </script>

@@ -606,7 +606,7 @@
 
     (async () => {
       const user = await window.api.verifySession();
-      if (user) window.location.href = 'index.html';
+      if (user) window.location.href = '/index';
     })();
 
     function setAuthMode(login) {
@@ -666,7 +666,7 @@
       try {
         if (isLogin) {
           await window.api.signIn(email, password);
-          window.location.href = 'index.html';
+          window.location.href = '/index';
         } else {
           if (!mpin.match(/^\d{4}$/)) throw new Error('Transaction PIN must be exactly 4 numeric digits.');
           await window.api.signUp({ email, password, full_name: fullName, phone, dob, address, mpin });

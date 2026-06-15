@@ -1,13 +1,13 @@
 const navItems = [
-  { icon: "layout-dashboard", label: "Overview",           path: "index.html",        roles: ["manager", "customer"] },
-  { icon: "file-plus",       label: "Apply for Loan",     path: "loan-center.html",  roles: ["customer"] },
-  { icon: "file-text",        label: "My Applications",    path: "applications.html", roles: ["customer"] },
-  { icon: "file-text",        label: "Submission Queue",   path: "applications.html", roles: ["manager"] },
-  { icon: "users",            label: "Customer Records",   path: "customers.html",    roles: ["manager"] },
-  { icon: "credit-card",      label: "Transactions",       path: "transactions.html", roles: ["manager", "customer"] },
-  { icon: "calendar-clock",   label: "Repayment Schedule", path: "emi-reminders.html",roles: ["customer"] },
-  { icon: "bar-chart-2",      label: "ML Analytics",       path: "ml-insights.html",  roles: ["manager"] },
-  { icon: "settings",         label: "Settings",           path: "settings.html",     roles: ["manager", "customer"] },
+  { icon: "layout-dashboard", label: "Overview",           path: "/index",        roles: ["manager", "customer"] },
+  { icon: "file-plus",       label: "Apply for Loan",     path: "/loan-center",  roles: ["customer"] },
+  { icon: "file-text",        label: "My Applications",    path: "/applications", roles: ["customer"] },
+  { icon: "file-text",        label: "Submission Queue",   path: "/applications", roles: ["manager"] },
+  { icon: "users",            label: "Customer Records",   path: "/customers",    roles: ["manager"] },
+  { icon: "credit-card",      label: "Transactions",       path: "/transactions", roles: ["manager", "customer"] },
+  { icon: "calendar-clock",   label: "Repayment Schedule", path: "/emi-reminders",roles: ["customer"] },
+  { icon: "bar-chart-2",      label: "ML Analytics",       path: "/ml-insights",  roles: ["manager"] },
+  { icon: "settings",         label: "Settings",           path: "/settings",     roles: ["manager", "customer"] },
 ];
 
 async function initDashboard() {
@@ -73,7 +73,7 @@ async function initDashboard() {
   document.getElementById('user-role').textContent = role === 'manager' ? 'Branch Manager' : 'Account Holder';
 
   const navList = document.getElementById('nav-items');
-  const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+  const currentPage = window.location.pathname.split('/').pop() || '/index';
 
   navItems.filter(item => item.roles.includes(role)).forEach(item => {
     const active = currentPage === item.path;
@@ -100,7 +100,7 @@ async function initDashboard() {
 
   document.getElementById('sign-out-btn').onclick = async () => {
     await window.api.signOut();
-    window.location.href = 'auth.html';
+    window.location.href = '/';
   };
 
   const sidebarWrapper = document.getElementById('sidebar-container');

@@ -144,8 +144,8 @@
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
       const user = await window.api.verifySession();
-      if (!user) { window.location.href = 'auth.html'; return; }
-      if (user.role !== 'manager') { window.location.href = 'index.html'; return; }
+      if (!user) { window.location.href = '/'; return; }
+      if (user.role !== 'manager') { window.location.href = '/index'; return; }
       window.currentUser = user;
       await initDashboard();
       await fetchData();

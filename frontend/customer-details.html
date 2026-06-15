@@ -18,7 +18,7 @@
 
         <!-- Back Button & Quick Actions -->
         <div class="flex items-center justify-between">
-          <button onclick="window.location.href='customers.html'" class="btn-secondary text-xs gap-2">
+          <button onclick="window.location.href='/customers'" class="btn-secondary text-xs gap-2">
             <i data-lucide="arrow-left" size="14"></i> Back to Directory
           </button>
           <div class="flex gap-2">
@@ -272,12 +272,12 @@
 
     document.addEventListener('DOMContentLoaded', async () => {
       const user = await window.api.verifySession();
-      if (!user || user.role !== 'manager') { window.location.href = 'index.html'; return; }
+      if (!user || user.role !== 'manager') { window.location.href = '/index'; return; }
       window.currentUser = user;
 
       const urlParams = new URLSearchParams(window.location.search);
       customerId = urlParams.get('id');
-      if (!customerId) { window.location.href = 'customers.html'; return; }
+      if (!customerId) { window.location.href = '/customers'; return; }
 
       await initDashboard();
       await fetchCustomerDetails();
@@ -293,7 +293,7 @@
         lucide.createIcons();
       } catch (err) {
         alert(err.message);
-        window.location.href = 'customers.html';
+        window.location.href = '/customers';
       }
     }
 

@@ -63,7 +63,7 @@
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
       const user = await window.api.verifySession();
-      if (!user) { window.location.href = 'auth.html'; return; }
+      if (!user) { window.location.href = '/'; return; }
       window.currentUser = user;
 
       await initDashboard();
@@ -78,7 +78,7 @@
       const actions = document.getElementById('header-actions');
 
       actions.innerHTML = `
-        <button onclick="window.location.href='loan-center.html'" class="btn-primary py-3 px-8 text-xs font-black uppercase tracking-widest">
+        <button onclick="window.location.href='/loan-center'" class="btn-primary py-3 px-8 text-xs font-black uppercase tracking-widest">
           Initiate Loan Audit
         </button>
       `;
@@ -135,7 +135,7 @@
               <div class="widget">
                 <div class="panel-header border-b px-6 py-4 flex justify-between items-center">
                   <h3 class="text-xs font-black uppercase tracking-widest">Repayment Roadmap</h3>
-                  <button onclick="window.location.href='emi-reminders.html'" class="text-[10px] font-bold text-primary uppercase">Manage Schedule</button>
+                  <button onclick="window.location.href='/emi-reminders'" class="text-[10px] font-bold text-primary uppercase">Manage Schedule</button>
                 </div>
                 <div class="p-6">
                   <div class="flex gap-4 overflow-x-auto pb-4 no-scrollbar">
@@ -242,14 +242,14 @@
                   <h3 class="text-xs font-black uppercase tracking-widest">Active Tasks</h3>
                 </div>
                 <div class="p-2 space-y-1">
-                  <div class="p-4 hover:bg-muted/30 transition-all rounded group cursor-pointer" onclick="window.location.href='emi-reminders.html'">
+                  <div class="p-4 hover:bg-muted/30 transition-all rounded group cursor-pointer" onclick="window.location.href='/emi-reminders'">
                     <div class="flex items-center gap-3">
                       <div class="w-2 h-2 rounded-full bg-amber-500"></div>
                       <span class="text-xs font-bold text-foreground">Verify Upcoming EMI</span>
                       <i data-lucide="chevron-right" size="14" class="ml-auto opacity-0 group-hover:opacity-100 transition-opacity"></i>
                     </div>
                   </div>
-                  <div class="p-4 hover:bg-muted/30 transition-all rounded group cursor-pointer" onclick="window.location.href='settings.html'">
+                  <div class="p-4 hover:bg-muted/30 transition-all rounded group cursor-pointer" onclick="window.location.href='/settings'">
                     <div class="flex items-center gap-3">
                       <div class="w-2 h-2 rounded-full bg-primary"></div>
                       <span class="text-xs font-bold text-foreground">Complete Profile Audit</span>
@@ -272,7 +272,7 @@
       const actions = document.getElementById('header-actions');
 
       actions.innerHTML = `
-        <button onclick="window.location.href='applications.html'" class="btn-primary py-3 px-8 text-xs font-black uppercase tracking-widest">
+        <button onclick="window.location.href='/applications'" class="btn-primary py-3 px-8 text-xs font-black uppercase tracking-widest">
           Portfolio Audit Queue
         </button>
       `;
@@ -326,7 +326,7 @@
               <div class="widget">
                 <div class="panel-header border-b px-6 py-4 flex justify-between items-center">
                   <h3 class="text-xs font-black uppercase tracking-widest">Awaiting Verification</h3>
-                  <button onclick="window.location.href='applications.html'" class="text-[10px] font-bold text-primary uppercase">Full Queue</button>
+                  <button onclick="window.location.href='/applications'" class="text-[10px] font-bold text-primary uppercase">Full Queue</button>
                 </div>
                 <div class="overflow-x-auto">
                   <table class="w-full text-sm">
@@ -347,7 +347,7 @@
                             </div>
                           </td>
                           <td class="px-6 py-4 text-right">
-                            <button onclick="window.location.href='applications.html'" class="text-[10px] font-black uppercase text-primary border-b border-primary/20 hover:border-primary transition-all">Review</button>
+                            <button onclick="window.location.href='/applications'" class="text-[10px] font-black uppercase text-primary border-b border-primary/20 hover:border-primary transition-all">Review</button>
                           </td>
                         </tr>
                       `).join('') || '<tr><td colspan="4" class="p-10 text-center text-xs italic text-muted-foreground">Audit queue is currently clear.</td></tr>'}
@@ -374,7 +374,7 @@
                     <span class="text-lg font-number font-bold">${stats.pending_verifications}</span>
                   </div>
                   <div class="h-px bg-primary/10"></div>
-                  <button onclick="window.location.href='customers.html'" class="btn-secondary w-full justify-center py-3 text-[10px] font-black uppercase tracking-widest">
+                  <button onclick="window.location.href='/customers'" class="btn-secondary w-full justify-center py-3 text-[10px] font-black uppercase tracking-widest">
                     Process Identities
                   </button>
                 </div>

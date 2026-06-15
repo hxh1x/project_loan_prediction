@@ -125,7 +125,7 @@
 
     document.addEventListener('DOMContentLoaded', async () => {
       const user = await window.api.verifySession();
-      if (!user) { window.location.href = 'auth.html'; return; }
+      if (!user) { window.location.href = '/'; return; }
       isManager = user.role === 'manager';
       window.currentUser = user;
 
