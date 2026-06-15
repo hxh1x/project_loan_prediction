@@ -1,6 +1,6 @@
 const navItems = [
-  { icon: "layout-dashboard", label: "Overview",           path: "/index",        roles: ["manager", "customer"] },
-  { icon: "file-plus",       label: "Apply for Loan",     path: "/loan-center",  roles: ["customer"] },
+  { icon: "layout-dashboard", label: "Overview",           path: "/",             roles: ["manager", "customer"] },
+  { icon: "file-plus",        label: "Apply for Loan",     path: "/loan-center",  roles: ["customer"] },
   { icon: "file-text",        label: "My Applications",    path: "/applications", roles: ["customer"] },
   { icon: "file-text",        label: "Submission Queue",   path: "/applications", roles: ["manager"] },
   { icon: "users",            label: "Customer Records",   path: "/customers",    roles: ["manager"] },
@@ -73,10 +73,11 @@ async function initDashboard() {
   document.getElementById('user-role').textContent = role === 'manager' ? 'Branch Manager' : 'Account Holder';
 
   const navList = document.getElementById('nav-items');
-  const currentPage = window.location.pathname.split('/').pop() || '/index';
+  const currentPath = window.location.pathname;
 
   navItems.filter(item => item.roles.includes(role)).forEach(item => {
-    const active = currentPage === item.path;
+    // Check if the current clean path matches the nav item
+    const active = currentPath === item.path || (currentPath === '/index' && item.path === '/');
     const btn = document.createElement('button');
     btn.className = `flex items-center gap-3 w-full px-3 py-2 rounded text-xs font-medium transition-colors ${
       active
@@ -100,7 +101,7 @@ async function initDashboard() {
 
   document.getElementById('sign-out-btn').onclick = async () => {
     await window.api.signOut();
-    window.location.href = '/';
+    window.location.href = '/'; // Ensure this points to the clean root
   };
 
   const sidebarWrapper = document.getElementById('sidebar-container');
